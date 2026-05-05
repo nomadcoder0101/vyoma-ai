@@ -1,0 +1,43 @@
+﻿{
+    "messages":  [
+                     {
+                         "role":  "assistant",
+                         "content":  "I am ready. Ask me for today\u0027s job-search plan, sponsorship wording, Singapore positioning, resume selection, or outreach strategy."
+                     },
+                     {
+                         "role":  "user",
+                         "content":  "How should we handle sponsorship?"
+                     },
+                     {
+                         "role":  "assistant",
+                         "content":  "For sponsorship, use a two-step framing:\n\nFirst establish fit: 10+ years AML/KYC/FCC, transaction monitoring, SAR/STR, CDD/EDD/ECDD, global banks and consulting.\nThen state authorization simply: based in Kuala Lumpur and eligible for employer-sponsored Employment Pass conversion.\n\nAvoid making sponsorship the opening sentence unless the employer directly asks for work authorization."
+                     }
+                 ],
+    "learnings":  [
+                      {
+                          "id":  "learning-1777902324789",
+                          "type":  "risk",
+                          "text":  "Sponsorship wording remains a recurring concern; lead with AML/FCC value before Employment Pass details.",
+                          "createdAt":  "2026-05-04T13:45:24.789Z"
+                      },
+                      {
+                          "id":  "memory-followups",
+                          "type":  "next_action",
+                          "text":  "Start with overdue follow-ups before adding more applications.",
+                          "createdAt":  "2026-05-04T13:45:24.789Z"
+                      },
+                      {
+                          "id":  "memory-sponsorship",
+                          "type":  "risk",
+                          "text":  "Employment Pass sponsorship is the main Malaysia friction and must be handled clearly.",
+                          "createdAt":  "2026-05-04T13:45:24.789Z"
+                      },
+                      {
+                          "id":  "memory-role-split",
+                          "type":  "decision",
+                          "text":  "Keep separate tracks for KYC/ECDD, transaction monitoring, SAR/STR reporting, and broad FCC roles.",
+                          "createdAt":  "2026-05-04T13:45:24.789Z"
+                      }
+                  ],
+    "updatedAt":  "2026-05-05T13:29:10.602Z"
+}

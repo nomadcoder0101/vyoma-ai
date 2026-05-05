@@ -1,0 +1,90 @@
+{
+  "id": "samruddhi-chougule",
+  "candidateName": "Samruddhi Suresh Chougule",
+  "headline": "Senior AML / KYC / Financial Crime Compliance professional with 10+ years of experience",
+  "currentLocation": "Kuala Lumpur, Malaysia",
+  "workAuthorization": "Based in Malaysia on Dependent Pass; requires employer-sponsored Employment Pass conversion/sponsorship.",
+  "salaryExpectation": "Flexible; up to MYR 10,000 per month is acceptable for the right Malaysia role.",
+  "targetLocations": [
+    "Kuala Lumpur, Malaysia",
+    "Singapore",
+    "Remote APAC",
+    "Remote Australia",
+    "Remote New Zealand"
+  ],
+  "targetRoles": [
+    "AML Investigations",
+    "KYC / CDD / EDD / ECDD",
+    "Transaction Monitoring",
+    "SAR / STR / SMR Reporting",
+    "Financial Crime Compliance",
+    "Compliance QA / Checker"
+  ],
+  "coreSkills": [
+    "AML lifecycle",
+    "Transaction monitoring alerts",
+    "Suspicious activity reporting",
+    "KYC refresh and onboarding",
+    "Enhanced due diligence",
+    "Sanctions, PEP, and adverse media review",
+    "Regulatory documentation",
+    "Global banking and consulting environments"
+  ],
+  "profileDescription": "Samruddhi has 10+ years of AML/KYC and Financial Crime Compliance experience across global banks and consulting firms. Her strongest positioning is senior analyst/specialist work across transaction monitoring, CDD/EDD/ECDD, suspicious reporting, and compliance quality review.",
+  "reasonForChange": "She has relocated from Bangalore to Kuala Lumpur to join her partner and is seeking a role that lets her continue her AML/FCC career in Malaysia, Singapore, or remote APAC markets.",
+  "constraints": [
+    "Malaysia roles need Employment Pass sponsorship.",
+    "Search should prioritize sponsor-capable employers such as global banks, consulting firms, large fintechs, and shared-service centers.",
+    "Remote roles from Australia, New Zealand, Singapore, and APAC are acceptable if work authorization terms fit."
+  ],
+  "resumeTemplates": [
+    {
+      "name": "Financial Crime Reporting",
+      "focus": "SAR/STR/SMR, investigation writing, regulatory reporting",
+      "notes": "Use for reporting-heavy AML investigations and financial crime analyst roles."
+    },
+    {
+      "name": "Financial Crime Compliance",
+      "focus": "AML/FCC lifecycle, controls, compliance QA, stakeholder documentation",
+      "notes": "Use for broader compliance roles at banks, consulting firms, and fintechs."
+    },
+    {
+      "name": "KYC Operations",
+      "focus": "KYC, CDD, EDD/ECDD, onboarding, refresh, beneficial ownership",
+      "notes": "Use for KYC operations, onboarding, client due diligence, and review roles."
+    },
+    {
+      "name": "ECDD & Transaction Monitoring",
+      "focus": "ECDD, transaction monitoring alerts, AML investigation workflow",
+      "notes": "Use for transaction monitoring, alert review, and AML investigation roles."
+    }
+  ],
+  "confirmed": true,
+  "memory": [
+    "Existing tracker has a large application history, so follow-up discipline matters as much as new applications.",
+    "Visa sponsorship is the main friction; outreach should foreground capability first and handle authorization clearly.",
+    "Separate positioning is needed for KYC/ECDD, transaction monitoring, and reporting-heavy roles."
+  ],
+  "agentNotes": [
+    {
+      "id": "note-sponsorship",
+      "type": "risk",
+      "text": "Malaysia Employment Pass sponsorship is the biggest search constraint; target sponsor-capable employers first.",
+      "createdAt": "2026-05-04T13:32:21.132Z"
+    },
+    {
+      "id": "note-positioning",
+      "type": "strength",
+      "text": "The strongest positioning is senior AML/FCC work with KYC/ECDD, transaction monitoring, and suspicious reporting.",
+      "createdAt": "2026-05-04T13:32:21.132Z"
+    },
+    {
+      "id": "note-daily-rhythm",
+      "type": "next_step",
+      "text": "Each day should start with follow-ups, then lead capture, then outreach for high-fit roles.",
+      "createdAt": "2026-05-04T13:32:21.132Z"
+    }
+  ],
+  "createdAt": "2026-05-04T13:32:21.132Z",
+  "updatedAt": "2026-05-04T13:32:29.973Z"
+}

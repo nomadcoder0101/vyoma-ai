@@ -1,0 +1,78 @@
+import { FileCheck2, FileText, Sparkles, Upload } from "lucide-react";
+import { loadProfile } from "../../lib/profile";
+import { Footer, MetricCard, SectionTitle, Topbar } from "../components";
+import { ResumeAnalyzer } from "./resume-analyzer";
+
+export default function ResumeStudioPage() {
+  const profile = loadProfile();
+
+  return (
+    <div className="shell">
+      <Topbar />
+      <main className="main">
+        <section className="section">
+          <SectionTitle
+            title="Resume Studio"
+            text="Choose the right resume version for each role and generate profile-aware positioning notes."
+          />
+          <div className="metricGrid dashboardMetrics">
+            <MetricCard value={profile.resumeTemplates.length} label="Resume versions mapped" />
+            <MetricCard value={profile.targetRoles.length} label="Target role families" />
+            <MetricCard value="4" label="Core recommendation tracks" />
+            <MetricCard value="Local" label="Recommendation mode" />
+          </div>
+        </section>
+
+        <section className="section resumeStudioLayout">
+          <div className="panel">
+            <div className="panelHeader">
+              <strong>Mapped resume versions</strong>
+              <span className="statusPill">From profile</span>
+            </div>
+            <div className="resumeTemplateGrid">
+              {profile.resumeTemplates.map((template) => (
+                <article className="resumeTemplateCard" key={template.name}>
+                  <span className="cardIcon">
+                    <FileText size={20} />
+                  </span>
+                  <h3>{template.name}</h3>
+                  <strong>{template.focus}</strong>
+                  <p>{template.notes}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <ResumeAnalyzer />
+        </section>
+
+        <section className="section">
+          <div className="grid3">
+            <article className="card">
+              <span className="cardIcon">
+                <FileCheck2 size={20} />
+              </span>
+              <h3>Role-family matching</h3>
+              <p>Match KYC, TM, SAR/STR, and broad FCC roles to the best resume version.</p>
+            </article>
+            <article className="card">
+              <span className="cardIcon">
+                <Sparkles size={20} />
+              </span>
+              <h3>Positioning notes</h3>
+              <p>Get a short angle for what the resume should emphasize before applying.</p>
+            </article>
+            <article className="card">
+              <span className="cardIcon">
+                <Upload size={20} />
+              </span>
+              <h3>Upload later</h3>
+              <p>Production can add secure resume upload, parsing, and generated tailored versions.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}
