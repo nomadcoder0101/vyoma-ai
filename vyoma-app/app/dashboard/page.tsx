@@ -8,7 +8,7 @@ import {
 import { followUpMessage, recommendations } from "../../lib/content";
 import { leadSummary, loadLeads } from "../../lib/leads";
 import {
-  loadProfile,
+  loadProfileAsync,
   profileCompleteness,
   profileImprovementSuggestions,
 } from "../../lib/profile";
@@ -22,11 +22,11 @@ import {
   formatDate,
 } from "../components";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
   const apps = loadApplications();
   const summary = trackerSummary(apps);
   const leads = leadSummary(loadLeads());
-  const profile = loadProfile();
+  const profile = await loadProfileAsync();
   const completeness = profileCompleteness(profile);
   const improvementSuggestions = profileImprovementSuggestions(profile);
   const metrics = [

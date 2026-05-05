@@ -7,6 +7,7 @@ const migrationsDir = join(root, "migrations");
 const migrationFiles = [
   "0001_initial_schema.sql",
   "0002_updated_at_triggers.sql",
+  "0003_profile_runtime_shape.sql",
 ];
 
 loadEnvFile(join(root, ".env.local"));
@@ -34,7 +35,9 @@ for (const file of migrationFiles) {
   }
 
   console.log(`Running ${file}`);
-  await sql.query(statement, []);
+  for (const query of splitSqlStatements(statement)) {
+    await sql.query(query, []);
+  }
   console.log(`Finished ${file}`);
 }
 
@@ -57,4 +60,95 @@ function loadEnvFile(path) {
       process.env[key] = value;
     }
   }
+}
+
+function splitSqlStatements(sqlText) {
+  const statements = [];
+  let current = "";
+  let singleQuote = false;
+  let doubleQuote = false;
+  let lineComment = false;
+  let blockComment = false;
+  let dollarQuote = "";
+
+  for (let index = 0; index < sqlText.length; index += 1) {
+    const char = sqlText[index];
+    const next = sqlText[index + 1] || "";
+
+    if (lineComment) {
+      current += char;
+      if (char === "\n") lineComment = false;
+      continue;
+    }
+
+    if (blockComment) {
+      current += char;
+      if (char === "*" && next === "/") {
+        current += next;
+        index += 1;
+        blockComment = false;
+      }
+      continue;
+    }
+
+    if (dollarQuote) {
+      if (sqlText.startsWith(dollarQuote, index)) {
+        current += dollarQuote;
+        index += dollarQuote.length - 1;
+        dollarQuote = "";
+      } else {
+        current += char;
+      }
+      continue;
+    }
+
+    if (!singleQuote && !doubleQuote && char === "-" && next === "-") {
+      current += char + next;
+      index += 1;
+      lineComment = true;
+      continue;
+    }
+
+    if (!singleQuote && !doubleQuote && char === "/" && next === "*") {
+      current += char + next;
+      index += 1;
+      blockComment = true;
+      continue;
+    }
+
+    if (!singleQuote && !doubleQuote && char === "$") {
+      const match = sqlText.slice(index).match(/^\$[A-Za-z0-9_]*\$/);
+      if (match) {
+        dollarQuote = match[0];
+        current += dollarQuote;
+        index += dollarQuote.length - 1;
+        continue;
+      }
+    }
+
+    if (!doubleQuote && char === "'" && sqlText[index - 1] !== "\\") {
+      singleQuote = !singleQuote;
+      current += char;
+      continue;
+    }
+
+    if (!singleQuote && char === '"') {
+      doubleQuote = !doubleQuote;
+      current += char;
+      continue;
+    }
+
+    if (!singleQuote && !doubleQuote && char === ";") {
+      const statement = current.trim();
+      if (statement) statements.push(statement);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  const tail = current.trim();
+  if (tail) statements.push(tail);
+  return statements;
 }

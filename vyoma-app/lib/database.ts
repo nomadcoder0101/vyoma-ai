@@ -79,6 +79,13 @@ export function getDatabaseSql() {
   return neon(databaseUrl);
 }
 
+export function assertDatabaseConfigured(area: string) {
+  const status = loadDatabaseStatus();
+  if (!status.configured) {
+    assertDatabaseReady(area);
+  }
+}
+
 export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
   const checkedAt = new Date().toISOString();
   const status = loadDatabaseStatus();

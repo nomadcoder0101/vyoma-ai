@@ -1,4 +1,4 @@
-import { loadProfile, type ResumeTemplate } from "./profile";
+import { loadProfile, loadProfileAsync, type CareerProfile, type ResumeTemplate } from "./profile";
 
 export type ResumeRecommendation = {
   recommended: ResumeTemplate;
@@ -12,6 +12,15 @@ export type ResumeRecommendation = {
 
 export function recommendResume(input: string): ResumeRecommendation {
   const profile = loadProfile();
+  return recommendResumeForProfile(input, profile);
+}
+
+export async function recommendResumeAsync(input: string): Promise<ResumeRecommendation> {
+  const profile = await loadProfileAsync();
+  return recommendResumeForProfile(input, profile);
+}
+
+export function recommendResumeForProfile(input: string, profile: CareerProfile): ResumeRecommendation {
   const text = input.toLowerCase();
   const scored = profile.resumeTemplates
     .map((template) => ({
@@ -36,6 +45,15 @@ export function recommendResume(input: string): ResumeRecommendation {
 
 export function resumeStudioSummary() {
   const profile = loadProfile();
+  return resumeStudioSummaryForProfile(profile);
+}
+
+export async function resumeStudioSummaryAsync() {
+  const profile = await loadProfileAsync();
+  return resumeStudioSummaryForProfile(profile);
+}
+
+function resumeStudioSummaryForProfile(profile: CareerProfile) {
   return {
     templates: profile.resumeTemplates,
     roleFamilies: [

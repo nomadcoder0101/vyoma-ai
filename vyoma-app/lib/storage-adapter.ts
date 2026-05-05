@@ -29,7 +29,7 @@ export const storageCapabilities: StorageCapability[] = [
     repository: true,
     localSource: "profiles/samruddhi.json",
     postgresTarget: "profiles, resume_variants, memories",
-    detail: "Profile now uses a repository boundary, backed by profiles/samruddhi.json in local mode.",
+    detail: "Profile has local and Postgres repository implementations. Runtime still follows VYOMA_STORAGE_MODE.",
   },
   {
     area: "Tracker",

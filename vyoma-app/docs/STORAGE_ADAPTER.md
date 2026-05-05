@@ -68,7 +68,7 @@ See `docs/DATABASE_PROVIDER.md` for the selected Neon through Vercel Marketplace
 
 | Area | Local source | Postgres target | Status |
 | --- | --- | --- | --- |
-| Profile | `profiles/samruddhi.json` | `profiles`, `resume_variants`, `memories` | Repository boundary added; local implementation active; Postgres intentionally blocked |
+| Profile | `profiles/samruddhi.json` | `profiles`, `resume_variants`, `memories` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
 | Tracker | `applications.md`, `tracker-actions.json` | `applications`, `application_events` | Repository boundary added; local implementation active; Postgres intentionally blocked |
 | Leads | `leads.json`, `applications.md` | `leads`, `applications` | Repository boundary added; local implementation active; Postgres intentionally blocked |
 | Assistant memory | `assistant-memory.json` | `assistant_messages`, `memories` | Repository boundary added; local implementation active; Postgres intentionally blocked |

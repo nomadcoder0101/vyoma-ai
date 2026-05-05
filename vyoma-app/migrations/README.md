@@ -8,6 +8,7 @@ These SQL files are provider-neutral Postgres migrations for the production app.
 | --- | --- |
 | `0001_initial_schema.sql` | Core account, profile, tracker, lead, resume, assistant memory, task, and integration tables |
 | `0002_updated_at_triggers.sql` | Shared trigger for mutable `updated_at` columns |
+| `0003_profile_runtime_shape.sql` | Runtime profile fields needed to round-trip the current app profile |
 
 ## Run Order
 

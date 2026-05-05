@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { assertDatabaseReady } from "./database";
-import { recommendResume, type ResumeRecommendation } from "./resume-studio";
+import { recommendResume, recommendResumeAsync, type ResumeRecommendation } from "./resume-studio";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
 export type LeadType = "job" | "recruiter" | "company";
@@ -67,6 +67,22 @@ export function updateLead(
   id: string,
   action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
 ) {
+  return updateLeadWithRecommendation(id, action);
+}
+
+export async function updateLeadAsync(
+  id: string,
+  action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
+) {
+  if (action !== "resume") return updateLeadWithRecommendation(id, action);
+  return updateLeadWithRecommendation(id, action, await recommendResumeAsyncForLead(id));
+}
+
+function updateLeadWithRecommendation(
+  id: string,
+  action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
+  resumeRecommendation?: ResumeRecommendation | null,
+) {
   const repository = getLeadRepository();
   const leads = repository.load();
   const index = leads.findIndex((lead) => lead.id === id);
@@ -92,7 +108,7 @@ export function updateLead(
   }
 
   if (action === "resume") {
-    updated.resumeRecommendation = recommendResume(leadToResumeInput(lead));
+    updated.resumeRecommendation = resumeRecommendation || recommendResume(leadToResumeInput(lead));
     updated.nextAction = `Use ${updated.resumeRecommendation.recommended.name} before applying or contacting a recruiter.`;
   }
 
@@ -111,6 +127,12 @@ export function updateLead(
   leads[index] = updated;
   repository.saveAll(leads);
   return updated;
+}
+
+async function recommendResumeAsyncForLead(id: string) {
+  const lead = getLeadRepository().load().find((item) => item.id === id);
+  if (!lead) return null;
+  return recommendResumeAsync(leadToResumeInput(lead));
 }
 
 export function convertLeadToTracker(id: string) {

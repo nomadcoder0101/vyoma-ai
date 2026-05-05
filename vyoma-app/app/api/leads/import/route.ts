@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { importLeadFromText, parseLeadText } from "../../../../lib/lead-import";
+import { importLeadFromTextAsync, parseLeadText } from "../../../../lib/lead-import";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -14,5 +14,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ preview: parseLeadText(rawText) });
   }
 
-  return NextResponse.json(importLeadFromText(rawText), { status: 201 });
+  return NextResponse.json(await importLeadFromTextAsync(rawText), { status: 201 });
 }

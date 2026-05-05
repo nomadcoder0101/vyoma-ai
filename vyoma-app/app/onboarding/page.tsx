@@ -1,10 +1,10 @@
 import { BrainCircuit, FileText, ShieldCheck, UserRoundCheck } from "lucide-react";
-import { loadProfile, profileCompleteness } from "../../lib/profile";
+import { loadProfileAsync, profileCompleteness } from "../../lib/profile";
 import { Feature, Footer, MetricCard, SectionTitle, Topbar } from "../components";
 import { ProfileWorkbench } from "./profile-workbench";
 
-export default function OnboardingPage() {
-  const profile = loadProfile();
+export default async function OnboardingPage() {
+  const profile = await loadProfileAsync();
   const completion = profileCompleteness(profile);
 
   return (

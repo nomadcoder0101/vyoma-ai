@@ -3,7 +3,7 @@ import {
   addLead,
   convertLeadToTracker,
   loadLeads,
-  updateLead,
+  updateLeadAsync,
   type LeadType,
 } from "../../../lib/leads";
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
     }
 
-    const lead = updateLead(
+    const lead = await updateLeadAsync(
       id,
       action as "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
     );

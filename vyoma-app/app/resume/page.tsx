@@ -1,10 +1,10 @@
 import { FileCheck2, FileText, Sparkles, Upload } from "lucide-react";
-import { loadProfile } from "../../lib/profile";
+import { loadProfileAsync } from "../../lib/profile";
 import { Footer, MetricCard, SectionTitle, Topbar } from "../components";
 import { ResumeAnalyzer } from "./resume-analyzer";
 
-export default function ResumeStudioPage() {
-  const profile = loadProfile();
+export default async function ResumeStudioPage() {
+  const profile = await loadProfileAsync();
 
   return (
     <div className="shell">

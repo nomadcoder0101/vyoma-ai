@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import {
   applyAgentInstruction,
-  loadProfile,
-  saveProfile,
+  loadProfileAsync,
+  saveProfileAsync,
   type CareerProfile,
 } from "../../../lib/profile";
 
 export async function GET() {
-  return NextResponse.json({ profile: loadProfile() });
+  return NextResponse.json({ profile: await loadProfileAsync() });
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
   if (body.action === "agent_edit") {
-    const current = loadProfile();
+    const current = await loadProfileAsync();
     const profile = applyAgentInstruction(current, String(body.instruction || ""));
-    return NextResponse.json({ profile: saveProfile(profile) });
+    return NextResponse.json({ profile: await saveProfileAsync(profile) });
   }
 
   const profileInput = body as CareerProfile;
@@ -26,5 +26,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ profile: saveProfile(profileInput) });
+  return NextResponse.json({ profile: await saveProfileAsync(profileInput) });
 }

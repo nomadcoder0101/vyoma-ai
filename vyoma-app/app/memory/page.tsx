@@ -1,6 +1,6 @@
 import { Clock3, MessageSquareText, ShieldAlert } from "lucide-react";
 import { loadAssistantMemory } from "../../lib/assistant";
-import { loadProfile } from "../../lib/profile";
+import { loadProfileAsync } from "../../lib/profile";
 import { Feature, Footer, MetricCard, SectionTitle, Topbar } from "../components";
 
 const typeLabels = {
@@ -10,9 +10,9 @@ const typeLabels = {
   next_action: "Next action",
 };
 
-export default function MemoryPage() {
+export default async function MemoryPage() {
   const memory = loadAssistantMemory();
-  const profile = loadProfile();
+  const profile = await loadProfileAsync();
   const recentMessages = memory.messages.slice(-10);
 
   return (

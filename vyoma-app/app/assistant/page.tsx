@@ -1,5 +1,5 @@
 import { Bot, BrainCircuit, KeyRound, MessageSquareText } from "lucide-react";
-import { loadProfile } from "../../lib/profile";
+import { loadProfileAsync } from "../../lib/profile";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 import { AssistantChat } from "./assistant-chat";
 
@@ -10,8 +10,8 @@ const starterPrompts = [
   "Which resume version should we use for transaction monitoring?",
 ];
 
-export default function AssistantPage() {
-  const profile = loadProfile();
+export default async function AssistantPage() {
+  const profile = await loadProfileAsync();
 
   return (
     <div className="shell">

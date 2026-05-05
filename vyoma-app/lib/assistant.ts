@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { assertDatabaseReady } from "./database";
 import { leadSummary, loadLeads } from "./leads";
-import { loadProfile, profileImprovementSuggestions, profileSummary } from "./profile";
+import { loadProfileAsync, profileImprovementSuggestions, profileSummary } from "./profile";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 import { loadApplications, trackerSummary } from "./tracker";
 
@@ -90,8 +90,8 @@ export function rememberAssistantExchange(
   };
 }
 
-export function buildAssistantContext() {
-  const profile = loadProfile();
+export async function buildAssistantContext() {
+  const profile = await loadProfileAsync();
   const applications = loadApplications();
   const tracker = trackerSummary(applications);
   const leads = leadSummary(loadLeads());
@@ -123,11 +123,11 @@ export async function answerWithAssistant(
   if (!apiKey) {
     return {
       mode: "local",
-      content: localAssistantReply(message),
+      content: await localAssistantReply(message),
     };
   }
 
-  const context = buildAssistantContext();
+  const context = await buildAssistantContext();
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -161,7 +161,7 @@ export async function answerWithAssistant(
   if (!response.ok) {
     return {
       mode: "local",
-      content: `${localAssistantReply(message)}\n\nNote: OpenAI request failed, so this answer used local fallback logic.`,
+      content: `${await localAssistantReply(message)}\n\nNote: OpenAI request failed, so this answer used local fallback logic.`,
     };
   }
 
@@ -175,7 +175,7 @@ export async function answerWithAssistant(
     content:
       body.output_text ||
       body.output?.flatMap((item) => item.content || []).map((item) => item.text).filter(Boolean).join("\n") ||
-      localAssistantReply(message),
+      await localAssistantReply(message),
   };
 }
 
@@ -186,9 +186,9 @@ function formatHistory(history: AssistantMessage[]) {
     .join("\n");
 }
 
-function localAssistantReply(message: string) {
+async function localAssistantReply(message: string) {
   const text = message.toLowerCase();
-  const profile = loadProfile();
+  const profile = await loadProfileAsync();
   const tracker = trackerSummary(loadApplications());
   const leads = leadSummary(loadLeads());
 

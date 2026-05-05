@@ -51,6 +51,10 @@ npm.cmd run db:migrate
 
 The runner loads `.env.local`, then runs the SQL files in `migrations/` in numeric order.
 
+## First Repository
+
+The profile repository is the first Postgres-backed runtime repository. It can create the pilot user, save the current profile, and round-trip resume variants through `profiles` and `resume_variants`.
+
 ## Health Check
 
 The app exposes:

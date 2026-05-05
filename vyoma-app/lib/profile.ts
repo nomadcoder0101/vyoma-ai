@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { assertDatabaseReady } from "./database";
+import { assertDatabaseConfigured, getDatabaseSql } from "./database";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
 export type ResumeTemplate = {
@@ -43,6 +43,12 @@ export type ProfileRepository = {
   mode: StorageMode;
   load: () => CareerProfile;
   save: (profile: CareerProfile) => CareerProfile;
+};
+
+export type AsyncProfileRepository = {
+  mode: StorageMode;
+  load: () => Promise<CareerProfile>;
+  save: (profile: CareerProfile) => Promise<CareerProfile>;
 };
 
 export const defaultProfile: CareerProfile = {
@@ -147,10 +153,24 @@ export function saveProfile(profile: CareerProfile) {
   return getProfileRepository().save(profile);
 }
 
+export async function loadProfileAsync() {
+  return getAsyncProfileRepository().load();
+}
+
+export async function saveProfileAsync(profile: CareerProfile) {
+  return getAsyncProfileRepository().save(profile);
+}
+
 export function getProfileRepository(): ProfileRepository {
   const mode = getStorageMode();
-  if (mode === "postgres") return postgresProfileRepository;
+  if (mode === "postgres") return blockedSyncPostgresProfileRepository;
   return localProfileRepository;
+}
+
+export function getAsyncProfileRepository(): AsyncProfileRepository {
+  const mode = getStorageMode();
+  if (mode === "postgres") return postgresProfileRepository;
+  return asyncLocalProfileRepository;
 }
 
 export function profileCompleteness(profile: CareerProfile) {
@@ -341,12 +361,167 @@ const localProfileRepository: ProfileRepository = {
   },
 };
 
-const postgresProfileRepository: ProfileRepository = {
-  mode: "postgres",
-  load() {
-    assertDatabaseReady("Profile repository");
+const asyncLocalProfileRepository: AsyncProfileRepository = {
+  mode: "local",
+  async load() {
+    return localProfileRepository.load();
   },
-  save() {
-    assertDatabaseReady("Profile repository");
+  async save(profile) {
+    return localProfileRepository.save(profile);
   },
 };
+
+type ProfileRow = {
+  external_id: string | null;
+  candidate_name: string;
+  headline: string;
+  current_location: string;
+  work_authorization: string;
+  salary_expectation: string;
+  target_locations: string[];
+  target_roles: string[];
+  core_skills: string[];
+  profile_description: string;
+  reason_for_change: string;
+  constraints: string[];
+  confirmed_at: string | null;
+  memory: string[];
+  agent_notes: AgentNote[];
+  created_at: string;
+  updated_at: string;
+};
+
+type ResumeVariantRow = {
+  name: string;
+  focus: string;
+  notes: string;
+};
+
+const pilotUserEmail = "samruddhi-pilot@vyoma.local";
+
+const blockedSyncPostgresProfileRepository: ProfileRepository = {
+  mode: "postgres",
+  load() {
+    throw new Error("Use loadProfileAsync() for Postgres profile storage.");
+  },
+  save() {
+    throw new Error("Use saveProfileAsync() for Postgres profile storage.");
+  },
+};
+
+const postgresProfileRepository: AsyncProfileRepository = {
+  mode: "postgres",
+  load() {
+    return loadPostgresProfile();
+  },
+  save(profile) {
+    return savePostgresProfile(profile);
+  },
+};
+
+async function ensurePilotUser() {
+  assertDatabaseConfigured("Profile repository");
+  const sql = getDatabaseSql();
+  const existing = (await sql.query(
+    "select id from users where email = $1 limit 1",
+    [pilotUserEmail],
+  )) as Array<{ id: string }>;
+  if (existing[0]?.id) return existing[0].id;
+
+  const inserted = (await sql.query(
+    "insert into users (email, name, auth_provider) values ($1, $2, $3) returning id",
+    [pilotUserEmail, defaultProfile.candidateName, "local-pilot"],
+  )) as Array<{ id: string }>;
+  return inserted[0].id;
+}
+
+async function loadPostgresProfile(): Promise<CareerProfile> {
+  const userId = await ensurePilotUser();
+  const sql = getDatabaseSql();
+  const rows = (await sql.query(
+    "select external_id, candidate_name, headline, current_location, work_authorization, salary_expectation, target_locations, target_roles, core_skills, profile_description, reason_for_change, constraints, confirmed_at, memory, agent_notes, created_at, updated_at from profiles where user_id = $1 and external_id = $2 limit 1",
+    [userId, defaultProfile.id],
+  )) as ProfileRow[];
+
+  if (!rows[0]) {
+    return savePostgresProfile(defaultProfile);
+  }
+
+  const resumeRows = (await sql.query(
+    "select name, focus, notes from resume_variants where profile_id = (select id from profiles where user_id = $1 and external_id = $2 limit 1) order by created_at asc",
+    [userId, defaultProfile.id],
+  )) as ResumeVariantRow[];
+
+  return normalizeProfile({
+    id: rows[0].external_id || defaultProfile.id,
+    candidateName: rows[0].candidate_name,
+    headline: rows[0].headline,
+    currentLocation: rows[0].current_location,
+    workAuthorization: rows[0].work_authorization,
+    salaryExpectation: rows[0].salary_expectation,
+    targetLocations: rows[0].target_locations,
+    targetRoles: rows[0].target_roles,
+    coreSkills: rows[0].core_skills,
+    profileDescription: rows[0].profile_description,
+    reasonForChange: rows[0].reason_for_change,
+    constraints: rows[0].constraints,
+    resumeTemplates: resumeRows.length ? resumeRows : defaultProfile.resumeTemplates,
+    confirmed: Boolean(rows[0].confirmed_at),
+    memory: rows[0].memory,
+    agentNotes: rows[0].agent_notes,
+    createdAt: rows[0].created_at,
+    updatedAt: rows[0].updated_at,
+  });
+}
+
+async function savePostgresProfile(profile: CareerProfile): Promise<CareerProfile> {
+  const nextProfile = normalizeProfile({
+    ...profile,
+    updatedAt: new Date().toISOString(),
+  });
+  const userId = await ensurePilotUser();
+  const sql = getDatabaseSql();
+  const confirmedAt = nextProfile.confirmed ? new Date().toISOString() : null;
+  const rows = (await sql.query(
+    [
+      "insert into profiles (user_id, external_id, candidate_name, headline, current_location, work_authorization, salary_expectation, target_locations, target_roles, core_skills, profile_description, reason_for_change, constraints, confirmed_at, memory, agent_notes)",
+      "values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10::jsonb, $11, $12, $13::jsonb, $14, $15::jsonb, $16::jsonb)",
+      "on conflict (user_id, external_id) where external_id is not null do update set",
+      "candidate_name = excluded.candidate_name, headline = excluded.headline, current_location = excluded.current_location, work_authorization = excluded.work_authorization, salary_expectation = excluded.salary_expectation, target_locations = excluded.target_locations, target_roles = excluded.target_roles, core_skills = excluded.core_skills, profile_description = excluded.profile_description, reason_for_change = excluded.reason_for_change, constraints = excluded.constraints, confirmed_at = excluded.confirmed_at, memory = excluded.memory, agent_notes = excluded.agent_notes",
+      "returning id, created_at, updated_at",
+    ].join(" "),
+    [
+      userId,
+      nextProfile.id,
+      nextProfile.candidateName,
+      nextProfile.headline,
+      nextProfile.currentLocation,
+      nextProfile.workAuthorization,
+      nextProfile.salaryExpectation,
+      JSON.stringify(nextProfile.targetLocations),
+      JSON.stringify(nextProfile.targetRoles),
+      JSON.stringify(nextProfile.coreSkills),
+      nextProfile.profileDescription,
+      nextProfile.reasonForChange,
+      JSON.stringify(nextProfile.constraints),
+      confirmedAt,
+      JSON.stringify(nextProfile.memory),
+      JSON.stringify(nextProfile.agentNotes),
+    ],
+  )) as Array<{ id: string; created_at: string; updated_at: string }>;
+
+  const profileId = rows[0].id;
+  await sql.query("delete from resume_variants where profile_id = $1", [profileId]);
+  for (const template of nextProfile.resumeTemplates) {
+    await sql.query(
+      "insert into resume_variants (profile_id, name, focus, notes) values ($1, $2, $3, $4)",
+      [profileId, template.name, template.focus, template.notes],
+    );
+  }
+
+  return {
+    ...nextProfile,
+    createdAt: rows[0].created_at,
+    updatedAt: rows[0].updated_at,
+  };
+}

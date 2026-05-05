@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { recommendResume, resumeStudioSummary } from "../../../lib/resume-studio";
+import { recommendResumeAsync, resumeStudioSummaryAsync } from "../../../lib/resume-studio";
 
 export async function GET() {
-  return NextResponse.json(resumeStudioSummary());
+  return NextResponse.json(await resumeStudioSummaryAsync());
 }
 
 export async function POST(request: Request) {
@@ -12,5 +12,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Role or JD text is required" }, { status: 400 });
   }
 
-  return NextResponse.json({ recommendation: recommendResume(input) });
+  return NextResponse.json({ recommendation: await recommendResumeAsync(input) });
 }
