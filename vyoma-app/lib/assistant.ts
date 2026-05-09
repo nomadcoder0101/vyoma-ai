@@ -1,10 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { assertDatabaseReady } from "./database";
-import { leadSummary, loadLeads } from "./leads";
-import { loadProfileAsync, profileImprovementSuggestions, profileSummary } from "./profile";
+import { assertDatabaseReady, getDatabaseSql } from "./database";
+import { leadSummary, loadLeadsAsync } from "./leads";
+import {
+  ensureActiveProfileDatabaseId,
+  loadProfileAsync,
+  profileImprovementSuggestions,
+  profileSummary,
+} from "./profile";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
-import { loadApplications, trackerSummary } from "./tracker";
+import { loadApplicationsAsync, trackerSummary } from "./tracker";
 
 export type AssistantMessage = {
   role: "user" | "assistant";
@@ -38,6 +43,12 @@ export type AssistantMemoryRepository = {
   save: (memory: AssistantMemory) => AssistantMemory;
 };
 
+export type AsyncAssistantMemoryRepository = {
+  mode: StorageMode;
+  load: () => Promise<AssistantMemory>;
+  save: (memory: AssistantMemory) => Promise<AssistantMemory>;
+};
+
 const greeting: AssistantMessage = {
   role: "assistant",
   content:
@@ -48,14 +59,28 @@ export function loadAssistantMemory(): AssistantMemory {
   return getAssistantMemoryRepository().load();
 }
 
+export async function loadAssistantMemoryAsync(): Promise<AssistantMemory> {
+  return getAsyncAssistantMemoryRepository().load();
+}
+
 export function saveAssistantMemory(memory: AssistantMemory) {
   return getAssistantMemoryRepository().save(memory);
 }
 
+export async function saveAssistantMemoryAsync(memory: AssistantMemory) {
+  return getAsyncAssistantMemoryRepository().save(memory);
+}
+
 export function getAssistantMemoryRepository(): AssistantMemoryRepository {
   const mode = getStorageMode();
-  if (mode === "postgres") return postgresAssistantMemoryRepository;
+  if (mode === "postgres") return blockedSyncPostgresAssistantMemoryRepository;
   return localAssistantMemoryRepository;
+}
+
+export function getAsyncAssistantMemoryRepository(): AsyncAssistantMemoryRepository {
+  const mode = getStorageMode();
+  if (mode === "postgres") return postgresAssistantMemoryRepository;
+  return asyncLocalAssistantMemoryRepository;
 }
 
 export function rememberAssistantExchange(
@@ -90,11 +115,43 @@ export function rememberAssistantExchange(
   };
 }
 
+export async function rememberAssistantExchangeAsync(
+  userMessage: string,
+  assistantMessage: string,
+  mode: "openai" | "local",
+) {
+  const memory = await loadAssistantMemoryAsync();
+  const now = new Date().toISOString();
+  const learning = extractLearning(userMessage, assistantMessage, now);
+  const nextMemory = await saveAssistantMemoryAsync({
+    messages: [
+      ...memory.messages,
+      { role: "user", content: userMessage },
+      { role: "assistant", content: assistantMessage },
+    ],
+    learnings: learning ? [learning, ...memory.learnings] : memory.learnings,
+    updatedAt: now,
+  });
+
+  return {
+    ...nextMemory,
+    learnings: [
+      {
+        id: `mode-${Date.now()}`,
+        type: "conversation" as const,
+        text: `Last assistant response used ${mode === "openai" ? "OpenAI" : "local fallback"} mode.`,
+        createdAt: now,
+      },
+      ...nextMemory.learnings,
+    ].slice(0, 30),
+  };
+}
+
 export async function buildAssistantContext() {
   const profile = await loadProfileAsync();
-  const applications = loadApplications();
+  const applications = await loadApplicationsAsync();
   const tracker = trackerSummary(applications);
-  const leads = leadSummary(loadLeads());
+  const leads = leadSummary(await loadLeadsAsync());
   const suggestions = profileImprovementSuggestions(profile);
 
   return [
@@ -189,8 +246,8 @@ function formatHistory(history: AssistantMessage[]) {
 async function localAssistantReply(message: string) {
   const text = message.toLowerCase();
   const profile = await loadProfileAsync();
-  const tracker = trackerSummary(loadApplications());
-  const leads = leadSummary(loadLeads());
+  const tracker = trackerSummary(await loadApplicationsAsync());
+  const leads = leadSummary(await loadLeadsAsync());
 
   if (text.includes("today") || text.includes("daily") || text.includes("next")) {
     return [
@@ -350,7 +407,17 @@ const localAssistantMemoryRepository: AssistantMemoryRepository = {
   },
 };
 
-const postgresAssistantMemoryRepository: AssistantMemoryRepository = {
+const asyncLocalAssistantMemoryRepository: AsyncAssistantMemoryRepository = {
+  mode: "local",
+  async load() {
+    return localAssistantMemoryRepository.load();
+  },
+  async save(memory) {
+    return localAssistantMemoryRepository.save(memory);
+  },
+};
+
+const blockedSyncPostgresAssistantMemoryRepository: AssistantMemoryRepository = {
   mode: "postgres",
   load() {
     assertDatabaseReady("Assistant memory repository");
@@ -359,3 +426,73 @@ const postgresAssistantMemoryRepository: AssistantMemoryRepository = {
     assertDatabaseReady("Assistant memory repository");
   },
 };
+
+const postgresAssistantMemoryRepository: AsyncAssistantMemoryRepository = {
+  mode: "postgres",
+  async load() {
+    const profileId = await ensureActiveProfileDatabaseId();
+    await seedPostgresAssistantMemory(profileId);
+    const sql = getDatabaseSql();
+    const messageRows = (await sql.query(
+      "select role, content from assistant_messages where profile_id = $1 order by created_at asc limit 40",
+      [profileId],
+    )) as Array<{ role: AssistantMessage["role"]; content: string }>;
+    const learningRows = (await sql.query(
+      'select id::text, type, text, created_at::text as "createdAt" from memories where profile_id = $1 order by created_at desc limit 40',
+      [profileId],
+    )) as AssistantMemoryItem[];
+
+    return normalizeAssistantMemory({
+      messages: messageRows,
+      learnings: learningRows,
+      updatedAt: new Date().toISOString(),
+    });
+  },
+  async save(memory) {
+    const profileId = await ensureActiveProfileDatabaseId();
+    const sql = getDatabaseSql();
+    const nextMemory = trimAssistantMemory(memory);
+
+    await sql.query("delete from assistant_messages where profile_id = $1", [profileId]);
+    await sql.query("delete from memories where profile_id = $1 and source = 'assistant'", [profileId]);
+
+    for (const message of nextMemory.messages) {
+      await sql.query(
+        "insert into assistant_messages (profile_id, role, content, mode) values ($1, $2, $3, 'local')",
+        [profileId, message.role, message.content],
+      );
+    }
+
+    for (const learning of nextMemory.learnings) {
+      await sql.query(
+        "insert into memories (profile_id, type, text, source, created_at) values ($1, $2, $3, 'assistant', $4)",
+        [profileId, learning.type, learning.text, learning.createdAt],
+      );
+    }
+
+    return nextMemory;
+  },
+};
+
+async function seedPostgresAssistantMemory(profileId: string) {
+  const sql = getDatabaseSql();
+  const countRows = (await sql.query(
+    "select ((select count(*) from assistant_messages where profile_id = $1) + (select count(*) from memories where profile_id = $1 and source = 'assistant'))::int as count",
+    [profileId],
+  )) as Array<{ count: number }>;
+  if ((countRows[0]?.count || 0) > 0) return;
+
+  const localMemory = localAssistantMemoryRepository.load();
+  for (const message of localMemory.messages) {
+    await sql.query(
+      "insert into assistant_messages (profile_id, role, content, mode) values ($1, $2, $3, 'local')",
+      [profileId, message.role, message.content],
+    );
+  }
+  for (const learning of localMemory.learnings) {
+    await sql.query(
+      "insert into memories (profile_id, type, text, source, created_at) values ($1, $2, $3, 'assistant', $4)",
+      [profileId, learning.type, learning.text, learning.createdAt],
+    );
+  }
+}

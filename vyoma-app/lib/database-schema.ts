@@ -104,7 +104,7 @@ export const databaseTables: DatabaseTable[] = [
     name: "daily_tasks",
     purpose: "Stores generated daily command-center tasks and completion state.",
     owner: "operations",
-    keyFields: ["id", "profile_id", "task_date", "type", "title", "detail", "href", "completed_at"],
+    keyFields: ["id", "profile_id", "task_date", "action_id", "type", "title", "detail", "href", "completed_at"],
     notes: "Generated tasks should be reproducible from tracker, leads, and memory.",
   },
   {
@@ -134,5 +134,13 @@ export const migrationFiles = [
   {
     file: "migrations/0002_updated_at_triggers.sql",
     purpose: "Adds updated_at triggers for mutable records.",
+  },
+  {
+    file: "migrations/0003_profile_runtime_shape.sql",
+    purpose: "Adds profile runtime ids, memory, and agent notes.",
+  },
+  {
+    file: "migrations/0004_daily_task_action_ids.sql",
+    purpose: "Adds stable daily action ids for generated task completion state.",
   },
 ];

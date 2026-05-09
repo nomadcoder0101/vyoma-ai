@@ -1,6 +1,6 @@
-# Vyoma Local-to-Postgres Migration Plan
+# Vyoma Local-to-Postgres Migration Notes
 
-This plan moves the current Samruddhi pilot data from local files into the production database.
+The current app can seed and operate core data through Postgres. These notes document the source-to-table mapping and the checks to keep local backup data aligned with production.
 
 ## Source Files
 
@@ -13,10 +13,10 @@ This plan moves the current Samruddhi pilot data from local files into the produ
 | `../data/assistant-memory.json` | `assistant_messages`, `memories` |
 | `../data/daily-actions.json` | `daily_tasks` or regenerated daily state |
 
-## Migration Sequence
+## Migration Sequence Implemented In Repositories
 
-1. Create the first production user account.
-2. Insert Samruddhi's profile under that `user_id`.
+1. Create or fetch the signed-in user account.
+2. Insert the active career profile under that `user_id`.
 3. Insert each resume template as a `resume_variants` row.
 4. Parse `applications.md` into `applications`, preserving the original tracker number in `source_row_number`.
 5. Convert tracker overlay statuses and notes into `application_events`.
@@ -34,7 +34,7 @@ This plan moves the current Samruddhi pilot data from local files into the produ
 
 ## Cutover Rule
 
-Keep local files as backup until the database-backed app can:
+Keep local files as backup. The database-backed app can:
 
 - Load the dashboard
 - Update tracker status

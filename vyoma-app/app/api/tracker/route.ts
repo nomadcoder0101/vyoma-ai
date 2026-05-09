@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { recordOutcomeLearning } from "../../../lib/outcome-learning";
+import { recordOutcomeLearningAsync } from "../../../lib/outcome-learning";
 import {
-  loadApplications,
-  updateApplicationAction,
+  loadApplicationsAsync,
+  updateApplicationActionAsync,
   type PipelineStatus,
 } from "../../../lib/tracker";
 
@@ -16,7 +16,7 @@ const statuses = new Set([
 ]);
 
 export async function GET() {
-  return NextResponse.json({ applications: loadApplications() });
+  return NextResponse.json({ applications: await loadApplicationsAsync() });
 }
 
 export async function POST(request: Request) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid pipeline status" }, { status: 400 });
   }
 
-  const application = updateApplicationAction({
+  const application = await updateApplicationActionAsync({
     num,
     pipelineStatus: pipelineStatus as PipelineStatus,
     note: String(body.note || ""),
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Application not found" }, { status: 404 });
   }
 
-  const learning = recordOutcomeLearning(
+  const learning = await recordOutcomeLearningAsync(
     application,
     pipelineStatus as PipelineStatus,
     String(body.note || ""),

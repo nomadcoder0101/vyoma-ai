@@ -33,7 +33,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Settings"
-            text="Readiness view for local pilot mode, AI configuration, data storage, and the pieces needed before Vercel production launch."
+            text="Readiness view for signed sessions, AI configuration, Postgres storage, integrations, and remaining production hardening."
           />
           <div className="metricGrid dashboardMetrics">
             <MetricCard value={readyChecks} label="Production checks ready" />
@@ -132,8 +132,8 @@ export default function SettingsPage() {
               <span className="statusPill">Clerk</span>
             </div>
             <p className="settingsAsideText">
-              Use Clerk first for secure login, hosted account UI, and Vercel-friendly
-              route protection. Auth.js remains the self-managed alternative.
+              The app now has a first-party signed session boundary. Clerk remains
+              the upgrade path for hosted account UI and social login.
             </p>
             <Link className="button secondary cardButton" href="/login">
               Open login plan
@@ -144,7 +144,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Database Boundary"
-            text="Postgres has a shared readiness check now. Repositories fail through this one boundary until a driver and implementation are wired."
+            text="Postgres has a shared readiness check now. The core career operations data is wired to database repositories."
           />
           <div className="settingsFileGrid">
             <article className="settingsFile">
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                 <span className={`tag ${status.database.driverInstalled ? "teal" : "amber"}`}>
                   {status.database.driverInstalled ? "Installed" : "Not installed"}
                 </span>
-                <span>Neon serverless driver is installed. Repository implementations are still blocked.</span>
+                <span>Neon serverless driver is installed. Core runtime repositories are database-backed.</span>
               </div>
             </article>
             <article className="settingsFile">
@@ -230,7 +230,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Storage Adapter"
-            text="The app keeps using local files today, with a clear switch point for Postgres once repository methods are connected."
+            text="The app can run local for the pilot or Postgres for core profile, tracker, leads, daily tasks, and assistant memory data."
           />
           <div className="settingsLayout">
             <div className="panel">
@@ -252,7 +252,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <strong>{status.storageAdapter.parity.postgresActive}</strong>
-                  <span>Postgres active areas</span>
+                  <span>Postgres-ready areas</span>
                 </div>
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Storage Parity Matrix"
-            text="Repository boundaries are in place for the core runtime modules. Postgres implementations are still deliberately blocked."
+            text="Repository boundaries are in place for the core runtime modules, with database implementations for the main product data."
           />
           <div className="storageParityGrid">
             {status.storageAdapter.capabilities.map((capability) => (
@@ -334,7 +334,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Local Data"
-            text="These files make the current single-profile pilot work. Production should move this shape into a user-scoped database."
+            text="These local files remain as a backup/source import record. Production runtime uses user-scoped Postgres repositories."
           />
           <div className="settingsFileGrid">
             {status.storageFiles.map((file) => (
@@ -387,7 +387,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Migration Files"
-            text="Provider-neutral Postgres SQL is ready, but the app still uses local files until a database is connected."
+            text="Provider-neutral Postgres SQL used to create and evolve the deployed database schema."
           />
           <div className="settingsFileGrid">
             {migrationFiles.map((migration) => (

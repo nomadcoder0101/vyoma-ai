@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import {
   answerWithAssistant,
-  loadAssistantMemory,
-  rememberAssistantExchange,
+  loadAssistantMemoryAsync,
+  rememberAssistantExchangeAsync,
   type AssistantMessage,
 } from "../../../lib/assistant";
 
 export async function GET() {
-  return NextResponse.json({ memory: loadAssistantMemory() });
+  return NextResponse.json({ memory: await loadAssistantMemoryAsync() });
 }
 
 export async function POST(request: Request) {
@@ -22,6 +22,6 @@ export async function POST(request: Request) {
   }
 
   const result = await answerWithAssistant(message, body.history || []);
-  const memory = rememberAssistantExchange(message, result.content, result.mode);
+  const memory = await rememberAssistantExchangeAsync(message, result.content, result.mode);
   return NextResponse.json({ ...result, memory });
 }

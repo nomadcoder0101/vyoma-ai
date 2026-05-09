@@ -43,7 +43,9 @@ export function loadSettingsStatus() {
     {
       label: "Authentication",
       ready: Boolean(process.env.AUTH_SECRET),
-      detail: "Production needs real user accounts and sessions.",
+      detail: process.env.AUTH_SECRET
+        ? "Signed account sessions are enabled and protected routes are active."
+        : "Set AUTH_SECRET so signed account sessions are stable across deployments.",
     },
     {
       label: "Database",

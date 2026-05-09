@@ -25,7 +25,7 @@ export const storageCapabilities: StorageCapability[] = [
   {
     area: "Profile",
     local: true,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "profiles/samruddhi.json",
     postgresTarget: "profiles, resume_variants, memories",
@@ -34,38 +34,38 @@ export const storageCapabilities: StorageCapability[] = [
   {
     area: "Tracker",
     local: true,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "applications.md, tracker-actions.json",
     postgresTarget: "applications, application_events",
-    detail: "Tracker now uses a repository boundary, backed by applications.md and tracker-actions.json in local mode.",
+    detail: "Tracker has local and Postgres repository implementations. Runtime follows VYOMA_STORAGE_MODE.",
   },
   {
     area: "Leads",
     local: true,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "leads.json, applications.md",
     postgresTarget: "leads, applications",
-    detail: "Leads now use a repository boundary, backed by leads.json and applications.md in local mode.",
+    detail: "Leads have local and Postgres repository implementations. Runtime follows VYOMA_STORAGE_MODE.",
   },
   {
     area: "Assistant memory",
     local: true,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "assistant-memory.json",
     postgresTarget: "assistant_messages, memories",
-    detail: "Assistant memory now uses a repository boundary, backed by assistant-memory.json in local mode.",
+    detail: "Assistant memory has local and Postgres repository implementations. Runtime follows VYOMA_STORAGE_MODE.",
   },
   {
     area: "Daily tasks",
     local: true,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "daily-actions.json",
     postgresTarget: "daily_tasks",
-    detail: "Daily command now uses a repository boundary, backed by daily-actions.json in local mode.",
+    detail: "Daily tasks have local and Postgres repository implementations. Runtime follows VYOMA_STORAGE_MODE.",
   },
   {
     area: "Integrations",
@@ -108,7 +108,7 @@ export function loadStorageAdapterStatus(): StorageAdapterStatus {
       activeLabel: "Postgres requested",
       ready: postgresReady,
       detail: postgresReady
-        ? "Postgres database access is ready."
+        ? "Postgres database access is ready for profile, tracker, leads, daily tasks, and assistant memory."
         : `Postgres mode was requested, but database access is blocked. ${database.detail}`,
       parity,
       capabilities: storageCapabilities,
@@ -129,7 +129,7 @@ export function assertWritableStorage() {
   const status = loadStorageAdapterStatus();
   if (status.mode === "postgres") {
     throw new Error(
-      "Postgres storage mode is not implemented yet. Set VYOMA_STORAGE_MODE=local until the database repositories are connected.",
+      "This synchronous storage path is not available in Postgres mode. Use the async repository for converted areas, or keep VYOMA_STORAGE_MODE=local until the remaining repositories are connected.",
     );
   }
   return status;

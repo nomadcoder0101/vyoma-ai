@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { assertDatabaseReady } from "./database";
+import { assertDatabaseReady, getDatabaseSql } from "./database";
+import { ensureActiveProfileDatabaseId } from "./profile";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
 export type Application = {
@@ -47,8 +48,22 @@ export type TrackerRepository = {
   saveOverlay: (overlay: TrackerOverlay) => TrackerOverlay;
 };
 
+export type AsyncTrackerRepository = {
+  mode: StorageMode;
+  loadApplications: () => Promise<Application[]>;
+  updateApplicationAction: (input: {
+    num: number;
+    pipelineStatus: PipelineStatus;
+    note?: string;
+  }) => Promise<Application | null>;
+};
+
 export function loadApplications(): Application[] {
   return getTrackerRepository().loadApplications();
+}
+
+export async function loadApplicationsAsync(): Promise<Application[]> {
+  return getAsyncTrackerRepository().loadApplications();
 }
 
 export function loadTrackerOverlay(): TrackerOverlay {
@@ -78,10 +93,24 @@ export function updateApplicationAction(input: {
   return mergeOverlay(app, overlay);
 }
 
+export async function updateApplicationActionAsync(input: {
+  num: number;
+  pipelineStatus: PipelineStatus;
+  note?: string;
+}) {
+  return getAsyncTrackerRepository().updateApplicationAction(input);
+}
+
 export function getTrackerRepository(): TrackerRepository {
   const mode = getStorageMode();
-  if (mode === "postgres") return postgresTrackerRepository;
+  if (mode === "postgres") return blockedSyncPostgresTrackerRepository;
   return localTrackerRepository;
+}
+
+export function getAsyncTrackerRepository(): AsyncTrackerRepository {
+  const mode = getStorageMode();
+  if (mode === "postgres") return postgresTrackerRepository;
+  return asyncLocalTrackerRepository;
 }
 
 export function trackerSummary(apps: Application[]) {
@@ -256,7 +285,17 @@ const localTrackerRepository: TrackerRepository = {
   },
 };
 
-const postgresTrackerRepository: TrackerRepository = {
+const asyncLocalTrackerRepository: AsyncTrackerRepository = {
+  mode: "local",
+  async loadApplications() {
+    return localTrackerRepository.loadApplications();
+  },
+  async updateApplicationAction(input) {
+    return updateApplicationAction(input);
+  },
+};
+
+const blockedSyncPostgresTrackerRepository: TrackerRepository = {
   mode: "postgres",
   loadApplications() {
     assertDatabaseReady("Tracker repository");
@@ -268,3 +307,156 @@ const postgresTrackerRepository: TrackerRepository = {
     assertDatabaseReady("Tracker event repository");
   },
 };
+
+type ApplicationRow = {
+  id: string;
+  source_row_number: number | null;
+  applied_on: string | null;
+  company: string;
+  role: string;
+  score: string;
+  status: string;
+  notes: string;
+  role_bucket: string;
+  pipeline_status: PipelineStatus | null;
+  action_notes: string | null;
+  last_action_at: string | null;
+};
+
+const postgresTrackerRepository: AsyncTrackerRepository = {
+  mode: "postgres",
+  async loadApplications() {
+    const profileId = await ensureActiveProfileDatabaseId();
+    await seedPostgresApplications(profileId);
+    const sql = getDatabaseSql();
+    const rows = (await sql.query(
+      `
+        select
+          a.id,
+          a.source_row_number,
+          a.applied_on::text,
+          a.company,
+          a.role,
+          a.score,
+          a.status,
+          a.notes,
+          a.role_bucket,
+          e.pipeline_status,
+          e.note as action_notes,
+          e.created_at::text as last_action_at
+        from applications a
+        left join lateral (
+          select pipeline_status, note, created_at
+          from application_events
+          where application_id = a.id
+          order by created_at desc
+          limit 1
+        ) e on true
+        where a.profile_id = $1
+        order by coalesce(a.source_row_number, 999999), a.created_at asc
+      `,
+      [profileId],
+    )) as ApplicationRow[];
+    return rows.map(rowToApplication);
+  },
+  async updateApplicationAction(input) {
+    const profileId = await ensureActiveProfileDatabaseId();
+    await seedPostgresApplications(profileId);
+    const sql = getDatabaseSql();
+    const rows = (await sql.query(
+      "select id, source_row_number, applied_on::text, company, role, score, status, notes, role_bucket from applications where profile_id = $1 and source_row_number = $2 limit 1",
+      [profileId, input.num],
+    )) as ApplicationRow[];
+    const row = rows[0];
+    if (!row) return null;
+
+    const note = sanitizeNote(input.note || "");
+    await sql.query(
+      `
+        insert into application_events (application_id, event_type, pipeline_status, note)
+        values ($1, $2, $3, $4)
+      `,
+      [row.id, eventTypeForStatus(input.pipelineStatus), input.pipelineStatus, note],
+    );
+    await sql.query(
+      "update applications set status = $1, updated_at = now() where id = $2",
+      [input.pipelineStatus, row.id],
+    );
+
+    return {
+      ...rowToApplication({
+        ...row,
+        pipeline_status: input.pipelineStatus,
+        action_notes: note,
+        last_action_at: new Date().toISOString(),
+      }),
+    };
+  },
+};
+
+async function seedPostgresApplications(profileId: string) {
+  const sql = getDatabaseSql();
+  const countRows = (await sql.query(
+    "select count(*)::int as count from applications where profile_id = $1",
+    [profileId],
+  )) as Array<{ count: number }>;
+  if ((countRows[0]?.count || 0) > 0) return;
+
+  const localApps = localTrackerRepository.loadApplications();
+  for (const app of localApps) {
+    await sql.query(
+      `
+        insert into applications (
+          profile_id, source_row_number, applied_on, company, role, score, status, notes, role_bucket
+        )
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        on conflict (profile_id, source_row_number) do nothing
+      `,
+      [
+        profileId,
+        app.num,
+        app.date || null,
+        app.company,
+        app.role,
+        app.score,
+        app.pipelineStatus || app.status || "applied",
+        app.notes,
+        app.bucket || classifyRole(app.role),
+      ],
+    );
+  }
+}
+
+function rowToApplication(row: ApplicationRow): Application {
+  const date = row.applied_on || "";
+  const daysSinceApplication = daysSince(date);
+  const base: Application = {
+    num: row.source_row_number || 0,
+    date,
+    company: row.company,
+    role: row.role,
+    score: row.score,
+    status: row.status,
+    notes: row.notes,
+    bucket: row.role_bucket || classifyRole(row.role),
+    daysSinceApplication,
+    urgency: classifyUrgency(daysSinceApplication),
+  };
+
+  if (!row.pipeline_status) return base;
+  return {
+    ...base,
+    pipelineStatus: row.pipeline_status,
+    actionNotes: row.action_notes || "",
+    lastActionAt: row.last_action_at || undefined,
+  };
+}
+
+function eventTypeForStatus(status: PipelineStatus) {
+  if (status === "follow_up_sent") return "follow_up";
+  if (status === "interview") return "interview";
+  if (status === "rejected") return "rejection";
+  if (status === "offer") return "offer";
+  if (status === "closed") return "status_change";
+  return "status_change";
+}

@@ -13,6 +13,7 @@ import {
   authProviderOptions,
   protectedRouteGroups,
 } from "../../lib/auth-plan";
+import { getCurrentUser } from "../../lib/auth";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 
 const fitLabels = {
@@ -27,7 +28,15 @@ const statusIcons = {
   later: LockKeyhole,
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ next?: string; error?: string }>;
+}) {
+  const params = (await searchParams) || {};
+  const next = safeNextPath(params.next || "/dashboard");
+  const user = await getCurrentUser();
+
   return (
     <div className="shell">
       <Topbar />
@@ -36,20 +45,56 @@ export default function LoginPage() {
           <div>
             <SectionTitle
               title="Account Login"
-              text="For the pilot, this screen represents the account boundary. Production will replace it with real authentication before public use."
+              text="Sign in to keep profile, tracker, leads, daily actions, and assistant memory scoped to one account."
             />
             <div className="loginCard">
               <span className="cardIcon">
                 <UserRoundCheck size={20} />
               </span>
-              <h3>Samruddhi pilot profile</h3>
+              <h3>{user ? "Signed in" : "Create or access account"}</h3>
               <p>
-                Continue into the profile setup, confirm the Career Ops profile,
-                then use the dashboard for daily job-search actions.
+                {user
+                  ? `You are signed in as ${user.email}. Continue to the protected dashboard.`
+                  : "Use the account email for this career profile. This first-party session can later be replaced by Clerk or Auth.js without changing the data model."}
               </p>
-              <Link className="button primary" href="/onboarding">
-                Continue <ArrowRight size={16} />
-              </Link>
+              {params.error ? <p className="formError">Enter a valid email address.</p> : null}
+              {user ? (
+                <div className="loginActions">
+                  <Link className="button primary" href={next}>
+                    Continue <ArrowRight size={16} />
+                  </Link>
+                  <form action="/api/auth/logout" method="post">
+                    <button className="button secondary" type="submit">
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <form className="loginForm" action="/api/auth/login" method="post">
+                  <input name="next" type="hidden" value={next} />
+                  <label>
+                    Name
+                    <input
+                      name="name"
+                      defaultValue="Samruddhi Chougule"
+                      autoComplete="name"
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      name="email"
+                      type="email"
+                      defaultValue="samruddhi@example.com"
+                      autoComplete="email"
+                      required
+                    />
+                  </label>
+                  <button className="button primary" type="submit">
+                    Sign in <ArrowRight size={16} />
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
@@ -61,7 +106,7 @@ export default function LoginPage() {
             <span className="cardIcon">
               <LockKeyhole size={20} />
             </span>
-            <h3>Recommended: Clerk</h3>
+              <h3>Recommended: Clerk</h3>
             <p>
               Use Clerk for the first public launch because it gives us secure
               login, session handling, hosted account UI, and route protection
@@ -162,4 +207,10 @@ export default function LoginPage() {
       <Footer />
     </div>
   );
+}
+
+function safeNextPath(value: string) {
+  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  if (value.startsWith("/api/")) return "/dashboard";
+  return value;
 }

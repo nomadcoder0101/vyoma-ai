@@ -6,13 +6,13 @@ import {
   MessageSquareText,
 } from "lucide-react";
 import { followUpMessage, recommendations } from "../../lib/content";
-import { leadSummary, loadLeads } from "../../lib/leads";
+import { leadSummary, loadLeadsAsync } from "../../lib/leads";
 import {
   loadProfileAsync,
   profileCompleteness,
   profileImprovementSuggestions,
 } from "../../lib/profile";
-import { loadApplications, trackerSummary } from "../../lib/tracker";
+import { loadApplicationsAsync, trackerSummary } from "../../lib/tracker";
 import {
   Feature,
   Footer,
@@ -23,9 +23,9 @@ import {
 } from "../components";
 
 export default async function DashboardPage() {
-  const apps = loadApplications();
+  const apps = await loadApplicationsAsync();
   const summary = trackerSummary(apps);
-  const leads = leadSummary(loadLeads());
+  const leads = leadSummary(await loadLeadsAsync());
   const profile = await loadProfileAsync();
   const completeness = profileCompleteness(profile);
   const improvementSuggestions = profileImprovementSuggestions(profile);

@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { assertDatabaseReady } from "./database";
+import { assertDatabaseReady, getDatabaseSql } from "./database";
+import { ensureActiveProfileDatabaseId } from "./profile";
 import { recommendResume, recommendResumeAsync, type ResumeRecommendation } from "./resume-studio";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
@@ -33,17 +34,35 @@ export type LeadRepository = {
   appendToTracker: (lead: Lead) => { row: string };
 };
 
-export function loadLeads(): Lead[] {
-  return getLeadRepository().load();
-}
+export type AsyncLeadRepository = {
+  mode: StorageMode;
+  load: () => Promise<Lead[]>;
+  add: (input: LeadInput) => Promise<Lead>;
+  update: (
+    id: string,
+    action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
+    resumeRecommendation?: ResumeRecommendation | null,
+  ) => Promise<Lead | null>;
+  convertToTracker: (id: string) => Promise<{ lead: Lead; trackerRow: string } | null>;
+};
 
-export function addLead(input: {
+export type LeadInput = {
   type: LeadType;
   url: string;
   title?: string;
   company?: string;
   notes?: string;
-}) {
+};
+
+export function loadLeads(): Lead[] {
+  return getLeadRepository().load();
+}
+
+export async function loadLeadsAsync() {
+  return getAsyncLeadRepository().load();
+}
+
+export function addLead(input: LeadInput) {
   const repository = getLeadRepository();
   const leads = repository.load();
   const now = new Date().toISOString();
@@ -63,6 +82,10 @@ export function addLead(input: {
   return lead;
 }
 
+export async function addLeadAsync(input: LeadInput) {
+  return getAsyncLeadRepository().add(input);
+}
+
 export function updateLead(
   id: string,
   action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
@@ -74,6 +97,10 @@ export async function updateLeadAsync(
   id: string,
   action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
 ) {
+  if (getStorageMode() === "postgres") {
+    const recommendation = action === "resume" ? await recommendResumeAsyncForLead(id) : null;
+    return getAsyncLeadRepository().update(id, action, recommendation);
+  }
   if (action !== "resume") return updateLeadWithRecommendation(id, action);
   return updateLeadWithRecommendation(id, action, await recommendResumeAsyncForLead(id));
 }
@@ -130,7 +157,7 @@ function updateLeadWithRecommendation(
 }
 
 async function recommendResumeAsyncForLead(id: string) {
-  const lead = getLeadRepository().load().find((item) => item.id === id);
+  const lead = (await loadLeadsAsync()).find((item) => item.id === id);
   if (!lead) return null;
   return recommendResumeAsync(leadToResumeInput(lead));
 }
@@ -155,10 +182,20 @@ export function convertLeadToTracker(id: string) {
   return { lead: updated, trackerRow: tracker.row };
 }
 
+export async function convertLeadToTrackerAsync(id: string) {
+  return getAsyncLeadRepository().convertToTracker(id);
+}
+
 export function getLeadRepository(): LeadRepository {
   const mode = getStorageMode();
-  if (mode === "postgres") return postgresLeadRepository;
+  if (mode === "postgres") return blockedSyncPostgresLeadRepository;
   return localLeadRepository;
+}
+
+export function getAsyncLeadRepository(): AsyncLeadRepository {
+  const mode = getStorageMode();
+  if (mode === "postgres") return postgresLeadRepository;
+  return asyncLocalLeadRepository;
 }
 
 export function leadSummary(leads: Lead[]) {
@@ -330,15 +367,214 @@ const localLeadRepository: LeadRepository = {
   },
 };
 
-const postgresLeadRepository: LeadRepository = {
-  mode: "postgres",
-  load() {
-    assertDatabaseReady("Lead repository");
+const asyncLocalLeadRepository: AsyncLeadRepository = {
+  mode: "local",
+  async load() {
+    return localLeadRepository.load();
   },
-  saveAll() {
-    assertDatabaseReady("Lead repository");
+  async add(input) {
+    return addLead(input);
   },
-  appendToTracker() {
-    assertDatabaseReady("Lead-to-tracker conversion");
+  async update(id, action, resumeRecommendation) {
+    return updateLeadWithRecommendation(id, action, resumeRecommendation);
+  },
+  async convertToTracker(id) {
+    return convertLeadToTracker(id);
   },
 };
+
+const blockedSyncPostgresLeadRepository: LeadRepository = {
+  mode: "postgres",
+  load() {
+    assertDatabaseReady("Lead repository sync access");
+  },
+  saveAll() {
+    assertDatabaseReady("Lead repository sync access");
+  },
+  appendToTracker() {
+    assertDatabaseReady("Lead-to-tracker sync conversion");
+  },
+};
+
+type LeadRow = {
+  id: string;
+  type: LeadType;
+  url: string;
+  title: string;
+  company: string;
+  notes: string;
+  status: Lead["status"];
+  score: string | number | null;
+  evaluation: string | null;
+  next_action: string | null;
+  outreach_draft: string | null;
+  resume_recommendation: ResumeRecommendation | null;
+  created_at: string;
+  updated_at: string;
+};
+
+const postgresLeadRepository: AsyncLeadRepository = {
+  mode: "postgres",
+  async load() {
+    const profileId = await ensureActiveProfileDatabaseId();
+    const sql = getDatabaseSql();
+    const rows = (await sql.query(
+      "select id, type, url, title, company, notes, status, score, evaluation, next_action, outreach_draft, resume_recommendation, created_at, updated_at from leads where profile_id = $1 order by created_at desc",
+      [profileId],
+    )) as LeadRow[];
+    return rows.map(rowToLead);
+  },
+  async add(input) {
+    const profileId = await ensureActiveProfileDatabaseId();
+    const sql = getDatabaseSql();
+    const now = new Date().toISOString();
+    const rows = (await sql.query(
+      "insert into leads (profile_id, type, url, title, company, notes, status, created_at, updated_at) values ($1, $2, $3, $4, $5, $6, 'new', $7, $7) returning id, type, url, title, company, notes, status, score, evaluation, next_action, outreach_draft, resume_recommendation, created_at, updated_at",
+      [
+        profileId,
+        input.type,
+        input.url.trim(),
+        input.title?.trim() || inferTitle(input.url),
+        input.company?.trim() || "",
+        input.notes?.trim() || "",
+        now,
+      ],
+    )) as LeadRow[];
+    return rowToLead(rows[0]);
+  },
+  async update(id, action, resumeRecommendation) {
+    const profileId = await ensureActiveProfileDatabaseId();
+    const sql = getDatabaseSql();
+    const rows = (await sql.query(
+      "select id, type, url, title, company, notes, status, score, evaluation, next_action, outreach_draft, resume_recommendation, created_at, updated_at from leads where profile_id = $1 and id = $2 limit 1",
+      [profileId, id],
+    )) as LeadRow[];
+    if (!rows[0]) return null;
+
+    const updated = applyLeadAction(rowToLead(rows[0]), action, resumeRecommendation);
+    const saved = (await sql.query(
+      "update leads set status = $1, score = $2, evaluation = $3, next_action = $4, outreach_draft = $5, resume_recommendation = $6::jsonb, updated_at = $7 where profile_id = $8 and id = $9 returning id, type, url, title, company, notes, status, score, evaluation, next_action, outreach_draft, resume_recommendation, created_at, updated_at",
+      [
+        updated.status,
+        updated.score ?? null,
+        updated.evaluation ?? null,
+        updated.nextAction ?? null,
+        updated.outreachDraft ?? null,
+        updated.resumeRecommendation ? JSON.stringify(updated.resumeRecommendation) : null,
+        updated.updatedAt,
+        profileId,
+        id,
+      ],
+    )) as LeadRow[];
+    return rowToLead(saved[0]);
+  },
+  async convertToTracker(id) {
+    const profileId = await ensureActiveProfileDatabaseId();
+    const sql = getDatabaseSql();
+    const rows = (await sql.query(
+      "select id, type, url, title, company, notes, status, score, evaluation, next_action, outreach_draft, resume_recommendation, created_at, updated_at from leads where profile_id = $1 and id = $2 limit 1",
+      [profileId, id],
+    )) as LeadRow[];
+    if (!rows[0]) return null;
+
+    const lead = rowToLead(rows[0]);
+    const numberRows = (await sql.query(
+      "select coalesce(max(source_row_number), 0)::int + 1 as next_number from applications where profile_id = $1",
+      [profileId],
+    )) as Array<{ next_number: number }>;
+    const nextNumber = numberRows[0]?.next_number || 1;
+    const application = (await sql.query(
+      "insert into applications (profile_id, source_row_number, applied_on, company, role, url, score, status, notes, role_bucket) values ($1, $2, $3, $4, $5, $6, $7, 'applied', $8, $9) returning source_row_number, company, role",
+      [
+        profileId,
+        nextNumber,
+        new Date().toISOString().slice(0, 10),
+        sanitizeCell(lead.company || "Unknown"),
+        sanitizeCell(lead.title || inferTitle(lead.url)),
+        lead.url,
+        lead.score ? String(lead.score) : "N/A",
+        sanitizeCell(
+          [
+            `Converted from lead ${lead.id}`,
+            `Type: ${lead.type}`,
+            lead.notes ? `Notes: ${lead.notes}` : "",
+            lead.resumeRecommendation
+              ? `Resume: ${lead.resumeRecommendation.recommended.name} (${lead.resumeRecommendation.score}/5)`
+              : "",
+          ]
+            .filter(Boolean)
+            .join("; "),
+        ),
+        classifyLeadRoleBucket(lead),
+      ],
+    )) as Array<{ source_row_number: number | null; company: string; role: string }>;
+
+    const updated = await this.update(id, "contacted");
+    if (!updated) return null;
+    const trackerRow = `Postgres application created: ${application[0].company} | ${application[0].role}`;
+    return { lead: updated, trackerRow };
+  },
+};
+
+function applyLeadAction(
+  lead: Lead,
+  action: "evaluate" | "draft" | "resume" | "contacted" | "archive" | "restore",
+  resumeRecommendation?: ResumeRecommendation | null,
+) {
+  const updated: Lead = {
+    ...lead,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (action === "evaluate") {
+    updated.status = "evaluated";
+    const evaluation = evaluateLead(lead);
+    updated.evaluation = evaluation.text;
+    updated.score = evaluation.score;
+    updated.nextAction = evaluation.nextAction;
+  }
+
+  if (action === "draft") {
+    updated.status = "drafted";
+    updated.outreachDraft = draftOutreach(lead);
+  }
+
+  if (action === "resume") {
+    updated.resumeRecommendation = resumeRecommendation || recommendResume(leadToResumeInput(lead));
+    updated.nextAction = `Use ${updated.resumeRecommendation.recommended.name} before applying or contacting a recruiter.`;
+  }
+
+  if (action === "contacted") updated.status = "contacted";
+  if (action === "archive") updated.status = "archived";
+  if (action === "restore") updated.status = "new";
+
+  return updated;
+}
+
+function rowToLead(row: LeadRow): Lead {
+  return {
+    id: row.id,
+    type: row.type,
+    url: row.url,
+    title: row.title,
+    company: row.company,
+    notes: row.notes,
+    status: row.status,
+    score: row.score === null ? undefined : Number(row.score),
+    evaluation: row.evaluation || undefined,
+    nextAction: row.next_action || undefined,
+    outreachDraft: row.outreach_draft || undefined,
+    resumeRecommendation: row.resume_recommendation || undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function classifyLeadRoleBucket(lead: Lead) {
+  const text = `${lead.title} ${lead.notes}`.toLowerCase();
+  if (/transaction monitoring|surveillance|alert|tm/.test(text)) return "Transaction Monitoring / Surveillance";
+  if (/kyc|kyb|cdd|edd|due diligence|onboarding/.test(text)) return "KYC / CDD / EDD / Onboarding";
+  if (/financial crime|aml|fcc|cft/.test(text)) return "AML / Financial Crime Compliance";
+  if (/fraud|risk/.test(text)) return "Fraud / Risk adjacent";
+  return "Other compliance / unclear";
+}

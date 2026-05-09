@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { loadDailyCommand, updateDailyAction } from "../../../lib/daily-command";
+import { loadDailyCommandAsync, updateDailyActionAsync } from "../../../lib/daily-command";
 
 export async function GET() {
-  return NextResponse.json({ command: loadDailyCommand() });
+  return NextResponse.json({ command: await loadDailyCommandAsync() });
 }
 
 export async function POST(request: Request) {
@@ -14,5 +14,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Action id is required" }, { status: 400 });
   }
 
-  return NextResponse.json({ command: updateDailyAction(id, done) });
+  return NextResponse.json({ command: await updateDailyActionAsync(id, done) });
 }

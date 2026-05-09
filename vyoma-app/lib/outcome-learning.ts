@@ -1,4 +1,9 @@
-import { loadAssistantMemory, saveAssistantMemory } from "./assistant";
+import {
+  loadAssistantMemory,
+  loadAssistantMemoryAsync,
+  saveAssistantMemory,
+  saveAssistantMemoryAsync,
+} from "./assistant";
 import type { Application, PipelineStatus } from "./tracker";
 
 type LearningType = "conversation" | "decision" | "risk" | "next_action";
@@ -9,6 +14,24 @@ export function recordOutcomeLearning(application: Application, status: Pipeline
 
   const memory = loadAssistantMemory();
   saveAssistantMemory({
+    ...memory,
+    learnings: [learning, ...memory.learnings].slice(0, 40),
+    updatedAt: new Date().toISOString(),
+  });
+
+  return learning;
+}
+
+export async function recordOutcomeLearningAsync(
+  application: Application,
+  status: PipelineStatus,
+  note: string,
+) {
+  const learning = buildLearning(application, status, note);
+  if (!learning) return null;
+
+  const memory = await loadAssistantMemoryAsync();
+  await saveAssistantMemoryAsync({
     ...memory,
     learnings: [learning, ...memory.learnings].slice(0, 40),
     updatedAt: new Date().toISOString(),

@@ -1,11 +1,11 @@
 import { ExternalLink, MessageSquareText, Search } from "lucide-react";
 import { followUpMessage, searches } from "../../lib/content";
-import { loadDailyCommand } from "../../lib/daily-command";
+import { loadDailyCommandAsync } from "../../lib/daily-command";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 import { DailyCommandBoard } from "./daily-command-board";
 
-export default function DailyPlanPage() {
-  const command = loadDailyCommand();
+export default async function DailyPlanPage() {
+  const command = await loadDailyCommandAsync();
 
   return (
     <div className="shell">

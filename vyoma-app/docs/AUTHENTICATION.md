@@ -1,8 +1,19 @@
-# Vyoma Authentication Plan
+# Vyoma Authentication
 
-This app is currently in local pilot mode. The login page marks the account boundary, but it does not yet create real sessions.
+The app currently has a first-party signed session boundary. The login page creates a signed HTTP-only session cookie, protected routes redirect anonymous users to `/login`, and protected APIs return `401` for anonymous requests.
 
-## Recommendation
+This is suitable for the current pilot. For a broader public launch, replace the first-party session provider with Clerk or Auth.js so email ownership, passwordless login, social login, account recovery, and hosted account management are handled by a mature auth provider.
+
+## Current Implementation
+
+- `lib/auth.ts` signs and verifies session cookies.
+- `proxy.ts` protects app routes and APIs.
+- `app/api/auth/login/route.ts` creates sessions.
+- `app/api/auth/logout/route.ts` clears sessions.
+- `lib/profile.ts` maps the signed-in email to a `users` row and active profile.
+- `AUTH_SECRET` must be set in local and Vercel environments.
+
+## Managed Auth Recommendation
 
 Use Clerk for the first production launch.
 
@@ -57,19 +68,21 @@ Every production record should be scoped to one of:
 
 The account owns the profile. The profile owns the tracker, leads, resume variants, memory, and daily tasks.
 
-## Clerk Implementation Path
+## Clerk Upgrade Path
 
 1. Install Clerk packages.
 2. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
-3. Add `middleware.ts` to protect app routes and APIs.
-4. Replace the pilot login card with Clerk sign-in/sign-up controls.
+3. Replace `proxy.ts` session checks with Clerk auth checks.
+4. Replace the first-party login form with Clerk sign-in/sign-up controls.
 5. Create or fetch the user's first `profiles` row after sign-in.
-6. Import Samruddhi's current local data under that user.
-7. Remove file writes from production code paths.
+6. Map Clerk user id/email to the existing `users` table.
+7. Keep the current profile/tracker/leads/memory repositories scoped by `user_id` and `profile_id`.
 
 ## Integration Storage Boundary
 
-`lib/integrations.ts` defines the OAuth account repository boundary. Local token storage is disabled. Production OAuth metadata should go into `integration_accounts` only after token encryption and user ownership are implemented.
+`lib/integrations.ts` defines the OAuth account repository boundary. Local token storage is disabled. Production OAuth metadata and encrypted tokens go into `integration_accounts`.
+
+Set `INTEGRATION_ENCRYPTION_KEY` before storing real provider tokens. If it is absent, the app falls back to `AUTH_SECRET`, which is acceptable for pilot validation but not ideal for long-lived production token rotation.
 
 ## Privacy Rules
 

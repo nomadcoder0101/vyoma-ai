@@ -40,25 +40,25 @@ export const selectedDatabaseProvider: DatabaseProviderPlan = {
     "This matches Vercel's current Marketplace Postgres path, uses Neon's actively maintained serverless driver, and avoids committing to Supabase Auth before auth is chosen.",
   nextSteps: [
     "Create a Neon database from the Vercel Marketplace.",
-    "Run migrations/0001_initial_schema.sql and migrations/0002_updated_at_triggers.sql.",
+    "Run npm.cmd run db:migrate.",
     "Set DATABASE_URL or the injected Neon Postgres variables.",
-    "Implement Postgres repositories one area at a time behind VYOMA_STORAGE_MODE=postgres.",
+    "Keep official OAuth and authentication as the remaining production hardening slices.",
   ],
 };
 
 export function loadDatabaseStatus(): DatabaseStatus {
   const configured = Boolean(getDatabaseUrl());
   const driverInstalled = true;
-  const repositoriesImplemented = false;
+  const repositoriesImplemented = true;
 
   return {
     configured,
     driverInstalled,
     repositoriesImplemented,
-    ready: configured && driverInstalled && repositoriesImplemented,
+    ready: configured && driverInstalled,
     provider: selectedDatabaseProvider,
     detail: configured
-      ? "Neon serverless driver is installed and a Postgres connection variable is set. Repository implementations are still blocked."
+      ? "Neon serverless driver is installed and a Postgres connection variable is set. Profile, tracker, leads, daily tasks, and assistant memory have Postgres repositories."
       : "Neon serverless driver is installed, but Postgres connection variables are not set. The app is using local file storage.",
   };
 }
@@ -121,7 +121,7 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
 export function assertDatabaseReady(area: string): never {
   const status = loadDatabaseStatus();
   const reason = status.configured
-    ? "Repository implementation is not wired yet."
+    ? "Repository implementation is not wired for this area yet."
     : "Postgres connection variables are missing.";
 
   throw new Error(

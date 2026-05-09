@@ -1,4 +1,4 @@
-import { addLead, updateLead, updateLeadAsync, type Lead, type LeadType } from "./leads";
+import { addLead, addLeadAsync, updateLead, updateLeadAsync, type Lead, type LeadType } from "./leads";
 
 export type LeadImportPreview = {
   type: LeadType;
@@ -55,9 +55,9 @@ export function importLeadFromText(rawText: string) {
 
 export async function importLeadFromTextAsync(rawText: string) {
   const preview = parseLeadText(rawText);
-  const lead = addLead(preview);
-  const evaluated = updateLead(lead.id, "evaluate") as Lead;
-  const drafted = updateLead(evaluated.id, "draft") as Lead;
+  const lead = await addLeadAsync(preview);
+  const evaluated = (await updateLeadAsync(lead.id, "evaluate")) as Lead;
+  const drafted = (await updateLeadAsync(evaluated.id, "draft")) as Lead;
   const withResume = (await updateLeadAsync(drafted.id, "resume")) as Lead;
 
   return {

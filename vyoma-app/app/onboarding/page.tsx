@@ -55,9 +55,9 @@ export default async function OnboardingPage() {
             </span>
             <h3>Important boundary</h3>
             <p>
-              This pilot stores profile data locally. Production release should add
-              authentication, encrypted storage, resume upload controls, and official
-              OAuth-based integrations.
+              Profile data is scoped to the signed-in account and stored in
+              Postgres in production. Next production slices are secure resume
+              uploads, managed auth, and official OAuth-based integrations.
             </p>
           </div>
         </section>

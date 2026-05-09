@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  addLead,
-  convertLeadToTracker,
-  loadLeads,
+  addLeadAsync,
+  convertLeadToTrackerAsync,
+  loadLeadsAsync,
   updateLeadAsync,
   type LeadType,
 } from "../../../lib/leads";
@@ -10,7 +10,7 @@ import {
 const leadTypes = new Set(["job", "recruiter", "company"]);
 
 export async function GET() {
-  return NextResponse.json({ leads: loadLeads() });
+  return NextResponse.json({ leads: await loadLeadsAsync() });
 }
 
 export async function POST(request: Request) {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "convert") {
-      const result = convertLeadToTracker(id);
+      const result = await convertLeadToTrackerAsync(id);
       if (!result) {
         return NextResponse.json({ error: "Lead not found" }, { status: 404 });
       }
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const lead = addLead({
+  const lead = await addLeadAsync({
     type: type as LeadType,
     url,
     title: String(body.title || ""),

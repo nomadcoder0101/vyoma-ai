@@ -32,14 +32,14 @@ POSTGRES_URL_NON_POOLING=...
 
 The app currently treats `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `POSTGRES_URL`, or `POSTGRES_PRISMA_URL` as a sign that database credentials exist.
 
-## Wiring Steps
+## Wiring Status
 
-1. Create a Neon database through the Vercel Marketplace.
-2. Add Neon credentials to `.env.local`.
-3. Run `npm.cmd run db:migrate`.
-4. Use the query helper in `lib/database.ts`.
-5. Implement Postgres repositories one area at a time.
-6. Switch `VYOMA_STORAGE_MODE=postgres` only after parity checks pass.
+1. Neon database is connected through Vercel environment variables.
+2. Local credentials live in `.env.local`.
+3. Migrations run with `npm.cmd run db:migrate`.
+4. `lib/database.ts` provides the shared query helper and health check.
+5. Profile, tracker, leads, daily tasks, and assistant memory have Postgres repositories.
+6. `VYOMA_STORAGE_MODE=postgres` is the production runtime.
 
 ## Migration Runner
 
@@ -51,9 +51,13 @@ npm.cmd run db:migrate
 
 The runner loads `.env.local`, then runs the SQL files in `migrations/` in numeric order.
 
-## First Repository
+## Converted Repositories
 
-The profile repository is the first Postgres-backed runtime repository. It can create the pilot user, save the current profile, and round-trip resume variants through `profiles` and `resume_variants`.
+- Profile can create the signed-in user, save the current profile, and round-trip resume variants through `profiles` and `resume_variants`.
+- Leads can list, create, evaluate, draft outreach, mark contacted, archive, recommend a resume variant, and convert a lead into an `applications` row.
+- Tracker can seed imported applications into `applications`, load them, and save pipeline events into `application_events`.
+- Daily tasks can persist completed daily action ids into `daily_tasks`.
+- Assistant memory can persist chat messages into `assistant_messages` and learnings into `memories`.
 
 ## Health Check
 

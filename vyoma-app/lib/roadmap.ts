@@ -14,9 +14,9 @@ export const roadmap: RoadmapItem[] = [
   },
   {
     area: "Account",
-    status: "in_progress",
+    status: "done",
     title: "Login boundary",
-    detail: "Pilot login boundary now documents the Clerk-first auth path, protected routes, and account ownership model.",
+    detail: "First-party signed sessions protect app routes and APIs, and signed-in emails map to user-owned profile data.",
   },
   {
     area: "Profile",
@@ -76,7 +76,7 @@ export const roadmap: RoadmapItem[] = [
     area: "Storage",
     status: "done",
     title: "Storage adapter boundary",
-    detail: "Documents and exposes the local file runtime with a clear Postgres switch point for repository migration.",
+    detail: "Profile, tracker, leads, daily tasks, and assistant memory have local and Postgres repository implementations.",
   },
   {
     area: "AI",
@@ -87,8 +87,8 @@ export const roadmap: RoadmapItem[] = [
   {
     area: "Account",
     status: "next",
-    title: "Install production auth",
-    detail: "Add Clerk or Auth.js, protect app routes and APIs, then map signed-in users to career profiles.",
+    title: "Upgrade managed auth",
+    detail: "Replace first-party sessions with Clerk or Auth.js for verified email ownership, social login, and account management.",
   },
   {
     area: "Integrations",
@@ -98,8 +98,8 @@ export const roadmap: RoadmapItem[] = [
   },
   {
     area: "Deployment",
-    status: "planned",
+    status: "done",
     title: "Vercel and app.vyomaai.in",
-    detail: "Deploy app to Vercel, connect domain, add environment variables, database, and production auth.",
+    detail: "Production is deployed to Vercel with vyomaai.in aliases, Neon Postgres, protected routes, and core environment variables.",
   },
 ];

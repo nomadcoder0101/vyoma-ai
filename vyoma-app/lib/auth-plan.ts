@@ -40,19 +40,19 @@ export const authProviderOptions: AuthProviderOption[] = [
 
 export const authMilestones: AuthMilestone[] = [
   {
-    title: "Choose provider",
-    detail: "Use Clerk for the fastest launch unless the database decision pushes strongly toward Supabase Auth.",
-    status: "next",
+    title: "First-party session boundary",
+    detail: "Signed account sessions protect the app now; Clerk or Auth.js can replace the session provider later.",
+    status: "ready",
   },
   {
     title: "Protect app routes",
-    detail: "Require a signed-in user for dashboard, onboarding, tracker, leads, resume, assistant, memory, and settings.",
-    status: "next",
+    detail: "Dashboard, onboarding, tracker, leads, resume, assistant, memory, settings, and APIs require a signed-in user.",
+    status: "ready",
   },
   {
     title: "Create user profile boundary",
-    detail: "Map the signed-in account to one or more career profiles through user_id and profile_id.",
-    status: "next",
+    detail: "The signed-in account maps to user_id and profile_id for profile, tracker, leads, daily tasks, and memory.",
+    status: "ready",
   },
   {
     title: "Migrate local pilot data",
@@ -60,8 +60,13 @@ export const authMilestones: AuthMilestone[] = [
     status: "later",
   },
   {
+    title: "Upgrade auth provider",
+    detail: "Add Clerk or Auth.js when we want managed passwordless login, social login, and hosted account management.",
+    status: "later",
+  },
+  {
     title: "Add OAuth integrations",
-    detail: "Add official OAuth providers only after the account boundary and database ownership are stable.",
+    detail: "Add official LinkedIn OAuth only after encrypted token storage is implemented.",
     status: "later",
   },
 ];

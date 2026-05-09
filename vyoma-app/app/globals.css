@@ -94,6 +94,20 @@ textarea {
   gap: 10px;
 }
 
+.nav form {
+  margin: 0;
+}
+
+.navUser {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .nav a,
 .button {
   align-items: center;
@@ -732,6 +746,51 @@ h1 {
   display: grid;
   gap: 14px;
   padding: 18px;
+}
+
+.loginForm {
+  display: grid;
+  gap: 12px;
+}
+
+.loginActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.loginActions form {
+  margin: 0;
+}
+
+.loginForm label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.loginForm input {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.formError {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  padding: 10px 12px;
 }
 
 .authOptionGrid {

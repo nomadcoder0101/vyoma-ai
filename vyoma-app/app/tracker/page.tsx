@@ -1,9 +1,9 @@
-import { loadApplications, trackerSummary } from "../../lib/tracker";
+import { loadApplicationsAsync, trackerSummary } from "../../lib/tracker";
 import { Footer, MetricCard, SectionTitle, Topbar } from "../components";
 import { TrackerTable } from "./tracker-table";
 
-export default function TrackerPage() {
-  const apps = loadApplications();
+export default async function TrackerPage() {
+  const apps = await loadApplicationsAsync();
   const summary = trackerSummary(apps);
 
   return (

@@ -1,8 +1,8 @@
 # Vyoma App Data Contract
 
-## Local Prototype Storage
+## Storage Contract
 
-The Vyoma app stores pilot data in the parent repository `data/` folder.
+The production app stores core runtime data in Postgres. The parent repository `data/` folder remains a local backup/source import record.
 
 ## User Data
 
@@ -25,9 +25,9 @@ The `vyoma-app/app`, `vyoma-app/lib`, and `vyoma-app/docs` folders are applicati
 
 `applications.md` is treated as imported source history. App updates should not rewrite it for routine status changes. Use overlay files such as `tracker-actions.json` for app-side state.
 
-## Future Database Mapping
+## Database Mapping
 
-| Local file | Future table |
+| Local file | Production table |
 | --- | --- |
 | `profiles/samruddhi.json` | `profiles` |
 | `leads.json` | `leads` |

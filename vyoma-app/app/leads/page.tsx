@@ -1,13 +1,13 @@
 import { Inbox, MessageSquareText, Search } from "lucide-react";
 import { followUpMessage } from "../../lib/content";
-import { leadSummary, loadLeads } from "../../lib/leads";
+import { leadSummary, loadLeadsAsync } from "../../lib/leads";
 import { Feature, Footer, MetricCard, SectionTitle, Topbar } from "../components";
 import { LeadForm } from "./lead-form";
 import { LeadImporter } from "./lead-importer";
 import { LeadQueue } from "./lead-queue";
 
-export default function LeadsPage() {
-  const leads = loadLeads();
+export default async function LeadsPage() {
+  const leads = await loadLeadsAsync();
   const summary = leadSummary(leads);
 
   return (

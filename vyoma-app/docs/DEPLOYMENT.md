@@ -2,7 +2,7 @@
 
 ## Current Mode
 
-The app currently runs as a local Next.js prototype using JSON and Markdown files under the parent `data/` directory.
+The app is deployed on Vercel and runs the core product data through Neon Postgres.
 
 ## Local Run
 
@@ -32,10 +32,11 @@ Set:
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.4-mini
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:3000
-VYOMA_STORAGE_MODE=local
+VYOMA_STORAGE_MODE=postgres
+AUTH_SECRET=...
 ```
 
-For production Postgres later, use Neon through the Vercel Marketplace:
+For Postgres, use Neon through the Vercel Marketplace:
 
 ```text
 DATABASE_URL=...
@@ -47,20 +48,21 @@ POSTGRES_URL_NON_POOLING=...
 
 Without `OPENAI_API_KEY`, the assistant uses local fallback logic.
 
-## Vercel Plan
+## Vercel
 
-1. Push this app to a Git repository.
-2. Import `vyoma-app` as the Vercel project root.
-3. Add environment variables in Vercel project settings.
-4. Configure `app.vyomaai.in` as a Vercel domain.
-5. Update DNS records as Vercel instructs.
+The current production project is `vyoma-ai`.
 
-## Production Blockers
+Live aliases:
 
-- Replace local JSON/Markdown storage with a database.
-- Add production authentication.
+- `https://vyoma-ai.vercel.app`
+- `https://vyomaai.in`
+- `https://www.vyomaai.in`
+
+## Remaining Production Work
+
 - Add secure resume upload/storage.
-- Add encrypted secrets.
+- Upgrade first-party sessions to managed auth such as Clerk/Auth.js.
+- Add encrypted integration token storage.
 - Add official OAuth integrations where available.
 - Keep LinkedIn password collection out of scope.
 
@@ -72,7 +74,7 @@ Use `npm.cmd run db:migrate` after adding Neon credentials.
 ## Recommended Production Stack
 
 - Vercel for hosting
-- Neon Postgres through the Vercel Marketplace for profile/tracker/leads/memory
+- Neon Postgres through the Vercel Marketplace for profile/tracker/leads/memory/daily tasks
 - Blob storage for resumes
 - OpenAI Responses API for assistant behavior
-- Auth provider such as Auth.js, Clerk, or Supabase Auth
+- Managed auth provider such as Clerk or Auth.js

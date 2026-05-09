@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { getCurrentUserOrPilot } from "./auth";
 import { assertDatabaseConfigured, getDatabaseSql } from "./database";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
@@ -159,6 +160,27 @@ export async function loadProfileAsync() {
 
 export async function saveProfileAsync(profile: CareerProfile) {
   return getAsyncProfileRepository().save(profile);
+}
+
+export async function ensureCurrentUserDatabaseId() {
+  return ensurePilotUser();
+}
+
+export async function ensureActiveProfileDatabaseId() {
+  const userId = await ensureCurrentUserDatabaseId();
+  const sql = getDatabaseSql();
+  const existing = (await sql.query(
+    "select id from profiles where user_id = $1 and external_id = $2 limit 1",
+    [userId, defaultProfile.id],
+  )) as Array<{ id: string }>;
+  if (existing[0]?.id) return existing[0].id;
+
+  await savePostgresProfile(defaultProfile);
+  const created = (await sql.query(
+    "select id from profiles where user_id = $1 and external_id = $2 limit 1",
+    [userId, defaultProfile.id],
+  )) as Array<{ id: string }>;
+  return created[0].id;
 }
 
 export function getProfileRepository(): ProfileRepository {
@@ -397,8 +419,6 @@ type ResumeVariantRow = {
   notes: string;
 };
 
-const pilotUserEmail = "samruddhi-pilot@vyoma.local";
-
 const blockedSyncPostgresProfileRepository: ProfileRepository = {
   mode: "postgres",
   load() {
@@ -421,16 +441,23 @@ const postgresProfileRepository: AsyncProfileRepository = {
 
 async function ensurePilotUser() {
   assertDatabaseConfigured("Profile repository");
+  const user = await getCurrentUserOrPilot();
   const sql = getDatabaseSql();
   const existing = (await sql.query(
     "select id from users where email = $1 limit 1",
-    [pilotUserEmail],
+    [user.email],
   )) as Array<{ id: string }>;
   if (existing[0]?.id) return existing[0].id;
 
   const inserted = (await sql.query(
-    "insert into users (email, name, auth_provider) values ($1, $2, $3) returning id",
-    [pilotUserEmail, defaultProfile.candidateName, "local-pilot"],
+    [
+      "insert into users (email, name, auth_provider)",
+      "values ($1, $2, $3)",
+      "on conflict (email) do update set",
+      "name = excluded.name, auth_provider = excluded.auth_provider, updated_at = now()",
+      "returning id",
+    ].join(" "),
+    [user.email, user.name || defaultProfile.candidateName, "vyoma-session"],
   )) as Array<{ id: string }>;
   return inserted[0].id;
 }

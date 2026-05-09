@@ -133,7 +133,7 @@ export default function Home() {
             <Feature
               icon={<ArrowRight size={20} />}
               title="Next phase"
-              text="Add production auth, AI assistant API, Vercel deployment, and app.vyomaai.in."
+              text="Add managed auth provider, official LinkedIn OAuth, and encrypted integration token storage."
             />
           </div>
         </section>
