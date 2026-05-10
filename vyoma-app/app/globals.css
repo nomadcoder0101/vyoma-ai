@@ -109,7 +109,11 @@ textarea {
 }
 
 .nav a,
-.button {
+.button,
+.iconOnly,
+.nav button,
+.heroActions button,
+.loginActions button {
   align-items: center;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -121,13 +125,38 @@ textarea {
   padding: 0 12px;
 }
 
-.nav a {
+.nav button,
+.heroActions button,
+.loginActions button {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.nav button:last-of-type,
+.heroActions button:first-of-type,
+.loginActions button:first-of-type {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+.nav a:not(.button),
+.iconOnly {
   color: var(--muted);
 }
 
-.nav a:hover {
+.nav a:hover,
+.iconOnly:hover {
   background: var(--surface-2);
   color: var(--ink);
+}
+
+.iconOnly {
+  justify-content: center;
+  padding: 0;
+  width: 38px;
 }
 
 .button.primary {
@@ -139,6 +168,256 @@ textarea {
   background: #fff;
   border-color: var(--line);
   color: var(--ink);
+}
+
+.landingHero {
+  align-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(246, 248, 251, 0.96)),
+    url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=80");
+  background-position: center;
+  background-size: cover;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  min-height: calc(100vh - 64px);
+  padding: 54px max(28px, calc((100vw - 1180px) / 2 + 28px)) 56px;
+}
+
+.landingHeroText {
+  max-width: 760px;
+}
+
+.landingHeroText h1 {
+  color: #111b22;
+  max-width: 740px;
+}
+
+.landingHeroText p {
+  color: #3d4e5a;
+  font-size: 19px;
+  line-height: 1.62;
+  margin: 20px 0 0;
+  max-width: 690px;
+}
+
+.commandPreview {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(219, 230, 236, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(18, 53, 91, 0.14);
+  padding: 18px;
+}
+
+.commandPreviewTop {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
+  margin: -18px -18px 16px;
+  padding: 16px 18px;
+}
+
+.commandPreviewTop span {
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.commandPreviewTop strong {
+  font-size: 20px;
+}
+
+.commandPreviewRows {
+  display: grid;
+  gap: 10px;
+}
+
+.commandPreviewRows span {
+  align-items: center;
+  background: #f9fbfc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 12px;
+}
+
+.commandPreviewRows svg {
+  color: var(--teal);
+  flex: 0 0 auto;
+}
+
+.flowBand {
+  background: #102a43;
+  color: #fff;
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(260px, 0.58fr) minmax(0, 1fr);
+  padding: 46px max(28px, calc((100vw - 1180px) / 2 + 28px));
+}
+
+.flowBand .eyebrow {
+  color: #8fe4d2;
+}
+
+.flowIntro h2 {
+  font-size: 34px;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.journeyGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.journeyStep {
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
+  padding: 0 0 0 16px;
+}
+
+.journeyStep span {
+  align-items: center;
+  background: #8fe4d2;
+  border-radius: 999px;
+  color: #102a43;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.journeyStep h3 {
+  font-size: 16px;
+  margin: 14px 0 8px;
+}
+
+.journeyStep p {
+  color: #c8d9e4;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.landingMain {
+  padding-top: 46px;
+}
+
+.appAreaGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.appArea {
+  align-items: start;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 150px;
+  padding: 16px;
+}
+
+.appArea h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.appArea p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.appArea > svg {
+  color: var(--muted);
+}
+
+.dashboardHero {
+  align-items: end;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding: 24px;
+}
+
+.dashboardHero h1 {
+  font-size: 42px;
+}
+
+.dashboardHero p {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 12px 0 0;
+  max-width: 760px;
+}
+
+.dashboardHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.dashboardStart {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+}
+
+.nextActionGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nextAction {
+  align-items: start;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 150px;
+  padding: 16px;
+}
+
+.nextAction h3 {
+  font-size: 17px;
+  margin: 10px 0 8px;
+}
+
+.nextAction p,
+.profilePulse p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.nextAction > svg {
+  color: var(--muted);
+}
+
+.profilePulse h3 {
+  font-size: 18px;
+  margin: 0 0 10px;
 }
 
 .hero {
@@ -1632,6 +1911,12 @@ h1 {
 
 @media (max-width: 920px) {
   .hero,
+  .landingHero,
+  .flowBand,
+  .journeyGrid,
+  .appAreaGrid,
+  .dashboardStart,
+  .nextActionGrid,
   .dashboard,
   .profileWorkbench,
   .loginShell,
@@ -1655,8 +1940,23 @@ h1 {
     font-size: 40px;
   }
 
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 12px;
+    padding-top: 12px;
+    position: static;
+  }
+
   .nav {
-    display: none;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    width: 100%;
+  }
+
+  .landingHero {
+    min-height: auto;
   }
 
   .leadToolbar {
@@ -1686,6 +1986,8 @@ h1 {
 @media (max-width: 560px) {
   .topbar,
   .hero,
+  .landingHero,
+  .flowBand,
   .main {
     padding-left: 18px;
     padding-right: 18px;
@@ -1693,6 +1995,19 @@ h1 {
 
   h1 {
     font-size: 34px;
+  }
+
+  .landingHeroText p {
+    font-size: 16px;
+  }
+
+  .dashboardHero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboardHero h1 {
+    font-size: 30px;
   }
 
   .metricGrid {

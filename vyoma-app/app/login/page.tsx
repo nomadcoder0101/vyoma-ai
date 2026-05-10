@@ -65,8 +65,8 @@ export default async function LoginPage({
               </Show>
               <Show when="signed-out">
                 <div className="loginActions">
-                  <SignInButton mode="modal" fallbackRedirectUrl={next}><button className="button primary" type="button">Sign in</button></SignInButton>
-                  <SignUpButton mode="modal" fallbackRedirectUrl="/onboarding"><button className="button secondary" type="button">Create account</button></SignUpButton>
+                  <SignInButton mode="modal" fallbackRedirectUrl={next}>Sign in</SignInButton>
+                  <SignUpButton mode="modal" fallbackRedirectUrl="/onboarding">Create account</SignUpButton>
                 </div>
               </Show>
             </div>

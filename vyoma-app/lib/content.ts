@@ -33,16 +33,10 @@ export const followUpMessage = `Hi [Name], I recently applied for the [Role] pos
 I am currently based in Kuala Lumpur and available immediately. I would be grateful if you could point me to the right recruiter or team contact for this role.`;
 
 export const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/login", label: "Login" },
-  { href: "/onboarding", label: "Profile" },
-  { href: "/assistant", label: "Assistant" },
-  { href: "/memory", label: "Memory" },
-  { href: "/resume", label: "Resume" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/tracker", label: "Tracker" },
   { href: "/daily-plan", label: "Daily Plan" },
   { href: "/leads", label: "Leads" },
-  { href: "/settings", label: "Settings" },
-  { href: "/roadmap", label: "Roadmap" },
+  { href: "/tracker", label: "Tracker" },
+  { href: "/assistant", label: "Assistant" },
+  { href: "/onboarding", label: "Profile" },
 ];
