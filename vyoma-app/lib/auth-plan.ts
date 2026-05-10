@@ -40,8 +40,8 @@ export const authProviderOptions: AuthProviderOption[] = [
 
 export const authMilestones: AuthMilestone[] = [
   {
-    title: "First-party session boundary",
-    detail: "Signed account sessions protect the app now; Clerk or Auth.js can replace the session provider later.",
+    title: "Clerk session boundary",
+    detail: "Clerk owns sign-in, session UI, and route protection for the app.",
     status: "ready",
   },
   {
@@ -60,9 +60,9 @@ export const authMilestones: AuthMilestone[] = [
     status: "later",
   },
   {
-    title: "Upgrade auth provider",
-    detail: "Add Clerk or Auth.js when we want managed passwordless login, social login, and hosted account management.",
-    status: "later",
+    title: "Add Clerk environment keys",
+    detail: "Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY locally and in Vercel before production sign-in testing.",
+    status: "next",
   },
   {
     title: "Add OAuth integrations",

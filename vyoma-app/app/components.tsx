@@ -1,3 +1,4 @@
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { navItems } from "../lib/content";
@@ -18,9 +19,16 @@ export function Topbar() {
             {item.label}
           </Link>
         ))}
-        <Link className="button primary" href="/dashboard">
-          Open App <ArrowRight size={16} />
-        </Link>
+        <Show when="signed-out">
+          <SignInButton mode="modal"><button className="button secondary" type="button">Sign in</button></SignInButton>
+          <SignUpButton mode="modal"><button className="button primary" type="button">Sign up</button></SignUpButton>
+        </Show>
+        <Show when="signed-in">
+          <Link className="button primary" href="/dashboard">
+            Open App <ArrowRight size={16} />
+          </Link>
+          <UserButton />
+        </Show>
       </nav>
     </header>
   );

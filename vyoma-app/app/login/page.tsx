@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import {
   ArrowRight,
   CheckCircle2,
@@ -13,7 +14,6 @@ import {
   authProviderOptions,
   protectedRouteGroups,
 } from "../../lib/auth-plan";
-import { getCurrentUser } from "../../lib/auth";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 
 const fitLabels = {
@@ -35,7 +35,6 @@ export default async function LoginPage({
 }) {
   const params = (await searchParams) || {};
   const next = safeNextPath(params.next || "/dashboard");
-  const user = await getCurrentUser();
 
   return (
     <div className="shell">
@@ -51,50 +50,25 @@ export default async function LoginPage({
               <span className="cardIcon">
                 <UserRoundCheck size={20} />
               </span>
-              <h3>{user ? "Signed in" : "Create or access account"}</h3>
+              <h3>Create or access account</h3>
               <p>
-                {user
-                  ? `You are signed in as ${user.email}. Continue to the protected dashboard.`
-                  : "Use the account email for this career profile. This first-party session can later be replaced by Clerk or Auth.js without changing the data model."}
+                Use Clerk sign-in so profile, tracker, leads, daily actions, and assistant memory stay scoped to the account.
               </p>
-              {params.error ? <p className="formError">Enter a valid email address.</p> : null}
-              {user ? (
+              {params.error ? <p className="formError">Sign-in could not be completed.</p> : null}
+              <Show when="signed-in">
                 <div className="loginActions">
                   <Link className="button primary" href={next}>
                     Continue <ArrowRight size={16} />
                   </Link>
-                  <form action="/api/auth/logout" method="post">
-                    <button className="button secondary" type="submit">
-                      Sign out
-                    </button>
-                  </form>
+                  <UserButton />
                 </div>
-              ) : (
-                <form className="loginForm" action="/api/auth/login" method="post">
-                  <input name="next" type="hidden" value={next} />
-                  <label>
-                    Name
-                    <input
-                      name="name"
-                      defaultValue="Samruddhi Chougule"
-                      autoComplete="name"
-                    />
-                  </label>
-                  <label>
-                    Email
-                    <input
-                      name="email"
-                      type="email"
-                      defaultValue="samruddhi@example.com"
-                      autoComplete="email"
-                      required
-                    />
-                  </label>
-                  <button className="button primary" type="submit">
-                    Sign in <ArrowRight size={16} />
-                  </button>
-                </form>
-              )}
+              </Show>
+              <Show when="signed-out">
+                <div className="loginActions">
+                  <SignInButton mode="modal" fallbackRedirectUrl={next}><button className="button primary" type="button">Sign in</button></SignInButton>
+                  <SignUpButton mode="modal" fallbackRedirectUrl="/onboarding"><button className="button secondary" type="button">Create account</button></SignUpButton>
+                </div>
+              </Show>
             </div>
           </div>
 
@@ -106,11 +80,11 @@ export default async function LoginPage({
             <span className="cardIcon">
               <LockKeyhole size={20} />
             </span>
-              <h3>Recommended: Clerk</h3>
+            <h3>Active provider: Clerk</h3>
             <p>
-              Use Clerk for the first public launch because it gives us secure
-              login, session handling, hosted account UI, and route protection
-              quickly on Vercel.
+              Clerk now handles secure login, session UI, and route protection.
+              Add the Clerk environment keys locally and in Vercel to activate
+              real sign-in.
             </p>
             <Link className="button secondary cardButton" href="/settings">
               View readiness <ArrowRight size={16} />

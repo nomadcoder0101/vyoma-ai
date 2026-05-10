@@ -11,6 +11,7 @@
     "smoke:live": "node scripts/smoke-live.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.3.3",
     "@neondatabase/serverless": "^1.1.0",
     "lucide-react": "latest",
     "next": "latest",

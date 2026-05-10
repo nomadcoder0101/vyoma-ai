@@ -1,31 +1,33 @@
 # Vyoma Authentication
 
-The app currently has a first-party signed session boundary. The login page creates a signed HTTP-only session cookie, protected routes redirect anonymous users to `/login`, and protected APIs return `401` for anonymous requests.
-
-This is suitable for the current pilot. For a broader public launch, replace the first-party session provider with Clerk or Auth.js so email ownership, passwordless login, social login, account recovery, and hosted account management are handled by a mature auth provider.
+Vyoma now uses Clerk for managed authentication. Clerk handles sign-in, sign-up, session UI, and route protection while the app keeps its existing `users`, `profiles`, tracker, leads, daily task, and memory ownership model.
 
 ## Current Implementation
 
-- `lib/auth.ts` signs and verifies session cookies.
-- `proxy.ts` protects app routes and APIs.
-- `app/api/auth/login/route.ts` creates sessions.
-- `app/api/auth/logout/route.ts` clears sessions.
-- `lib/profile.ts` maps the signed-in email to a `users` row and active profile.
-- `AUTH_SECRET` must be set in local and Vercel environments.
+- `proxy.ts` uses `clerkMiddleware()` to protect app routes and APIs.
+- `app/layout.tsx` wraps the app in `<ClerkProvider>`.
+- `app/components.tsx` and `app/login/page.tsx` use Clerk `<Show>`, `<SignInButton>`, `<SignUpButton>`, and `<UserButton>`.
+- `lib/auth.ts` reads the signed-in Clerk session with `await auth()` and maps Clerk identity into the existing user/profile lookup.
+- `lib/profile.ts` continues mapping the signed-in user to the active career profile.
 
-## Managed Auth Recommendation
+## Required Environment Variables
 
-Use Clerk for the first production launch.
+Set these locally and in Vercel:
 
-Why:
+```text
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
+CLERK_SECRET_KEY=...
+```
 
-- Fastest route to secure login on Vercel
-- Hosted account management
-- Email and social login support
-- Good Next.js middleware support
-- Less custom security work while the product is still evolving
+Keep these existing production variables:
 
-Auth.js is also viable if we want a more open-source, self-managed path. Supabase Auth is viable if Supabase becomes the chosen Postgres provider.
+```text
+NEXT_PUBLIC_APP_URL=...
+VYOMA_STORAGE_MODE=postgres
+DATABASE_URL=...
+INTEGRATION_ENCRYPTION_KEY=...
+OPENAI_API_KEY=...
+```
 
 ## Required Route Protection
 
@@ -66,23 +68,13 @@ Every production record should be scoped to one of:
 - `user_id`
 - `profile_id`
 
-The account owns the profile. The profile owns the tracker, leads, resume variants, memory, and daily tasks.
-
-## Clerk Upgrade Path
-
-1. Install Clerk packages.
-2. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
-3. Replace `proxy.ts` session checks with Clerk auth checks.
-4. Replace the first-party login form with Clerk sign-in/sign-up controls.
-5. Create or fetch the user's first `profiles` row after sign-in.
-6. Map Clerk user id/email to the existing `users` table.
-7. Keep the current profile/tracker/leads/memory repositories scoped by `user_id` and `profile_id`.
+The Clerk account maps to a local `users` row. The local user owns the profile, and the profile owns tracker rows, leads, resume variants, memory, and daily tasks.
 
 ## Integration Storage Boundary
 
 `lib/integrations.ts` defines the OAuth account repository boundary. Local token storage is disabled. Production OAuth metadata and encrypted tokens go into `integration_accounts`.
 
-Set `INTEGRATION_ENCRYPTION_KEY` before storing real provider tokens. If it is absent, the app falls back to `AUTH_SECRET`, which is acceptable for pilot validation but not ideal for long-lived production token rotation.
+Set `INTEGRATION_ENCRYPTION_KEY` before storing real provider tokens. If it is absent, the app falls back to `AUTH_SECRET`, but production should use a separate integration encryption key.
 
 ## Privacy Rules
 

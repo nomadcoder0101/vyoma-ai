@@ -32,8 +32,10 @@ Set:
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.4-mini
 NEXT_PUBLIC_APP_URL=http://127.0.0.1:3000
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
+CLERK_SECRET_KEY=...
 VYOMA_STORAGE_MODE=postgres
-AUTH_SECRET=...
+INTEGRATION_ENCRYPTION_KEY=...
 ```
 
 For Postgres, use Neon through the Vercel Marketplace:
@@ -61,8 +63,7 @@ Live aliases:
 ## Remaining Production Work
 
 - Add secure resume upload/storage.
-- Upgrade first-party sessions to managed auth such as Clerk/Auth.js.
-- Add encrypted integration token storage.
+- Add official LinkedIn OAuth credentials and approved scopes.
 - Add official OAuth integrations where available.
 - Keep LinkedIn password collection out of scope.
 
@@ -77,4 +78,4 @@ Use `npm.cmd run db:migrate` after adding Neon credentials.
 - Neon Postgres through the Vercel Marketplace for profile/tracker/leads/memory/daily tasks
 - Blob storage for resumes
 - OpenAI Responses API for assistant behavior
-- Managed auth provider such as Clerk or Auth.js
+- Clerk for managed authentication

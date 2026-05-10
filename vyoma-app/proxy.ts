@@ -1,45 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const sessionCookieName = "vyoma_session";
-
-const publicPaths = new Set([
+const isPublicRoute = createRouteMatcher([
   "/",
   "/login",
-  "/api/auth/login",
-  "/api/auth/logout",
+  "/roadmap",
 ]);
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect();
   }
-
-  const session = request.cookies.get(sessionCookieName)?.value;
-  if (session) {
-    return NextResponse.next();
-  }
-
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
-  const loginUrl = request.nextUrl.clone();
-  loginUrl.pathname = "/login";
-  loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-  return NextResponse.redirect(loginUrl);
-}
-
-function isPublicPath(pathname: string) {
-  return (
-    publicPaths.has(pathname) ||
-    pathname.startsWith("/_next/") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/images/")
-  );
-}
+});
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };

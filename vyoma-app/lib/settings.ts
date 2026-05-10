@@ -41,11 +41,11 @@ export function loadSettingsStatus() {
       detail: openAiConfigured ? "Assistant can call OpenAI." : "Assistant is using local fallback.",
     },
     {
-      label: "Authentication",
-      ready: Boolean(process.env.AUTH_SECRET),
-      detail: process.env.AUTH_SECRET
-        ? "Signed account sessions are enabled and protected routes are active."
-        : "Set AUTH_SECRET so signed account sessions are stable across deployments.",
+      label: "Clerk authentication",
+      ready: Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY),
+      detail: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
+        ? "Clerk login is configured and protected routes are active."
+        : "Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY to activate sign-in.",
     },
     {
       label: "Database",
