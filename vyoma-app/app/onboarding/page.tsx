@@ -53,11 +53,11 @@ export default async function OnboardingPage() {
             <span className="cardIcon">
               <ShieldCheck size={20} />
             </span>
-            <h3>Important boundary</h3>
+            <h3>Resume storage note</h3>
             <p>
-              Profile data is scoped to the signed-in account and stored in
-              Postgres in production. Next production slices are secure resume
-              uploads, managed auth, and official OAuth-based integrations.
+              Resume versions are saved to the signed-in profile now as names,
+              role focus, and notes or cloud links. Direct file upload is the
+              next storage step once blob storage is connected.
             </p>
           </div>
         </section>

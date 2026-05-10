@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BadgeCheck, BrainCircuit, Send, Save, Sparkles } from "lucide-react";
+import { BadgeCheck, BrainCircuit, FileText, Plus, Send, Save, Sparkles } from "lucide-react";
 import type { CareerProfile } from "../../lib/profile";
 
 export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerProfile }) {
@@ -41,7 +41,7 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
       confirmed: false,
       resumeTemplates: [
         ...current.resumeTemplates,
-        { name: "New resume template", focus: "Role focus", notes: "When to use it" },
+        { name: "New resume / CV version", focus: "Target role or job family", notes: "Paste file name, link, or notes on when to use this resume." },
       ],
     }));
   }
@@ -216,25 +216,49 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
 
         <div className="resumeEditor">
           <div className="sectionTitle compact">
-            <h2>Resume templates</h2>
+            <div>
+              <h2>Attached resumes / CV versions</h2>
+              <p>
+                Add each resume version you want the assistant to consider. For now,
+                store the file name, cloud link, and usage notes here.
+              </p>
+            </div>
             <button className="button secondary" onClick={addResumeTemplate} type="button">
-              Add template
+              <Plus size={16} /> Add resume
             </button>
+          </div>
+          <div className="resumeAttachmentGrid">
+            {profile.resumeTemplates.map((template, index) => (
+              <article className="resumeAttachment" key={`${template.name}-summary-${index}`}>
+                <span className="cardIcon">
+                  <FileText size={20} />
+                </span>
+                <div>
+                  <strong>{template.name}</strong>
+                  <span>{template.focus}</span>
+                  <p>{template.notes}</p>
+                </div>
+              </article>
+            ))}
           </div>
           {profile.resumeTemplates.map((template, index) => (
             <div className="resumeRow" key={`${template.name}-${index}`}>
+              <span className="resumeRowLabel">Resume {index + 1}</span>
               <input
-                aria-label="Resume template name"
+                aria-label="Resume file name or version"
+                placeholder="File name or version label"
                 value={template.name}
                 onChange={(event) => updateResume(index, "name", event.target.value)}
               />
               <input
-                aria-label="Resume template focus"
+                aria-label="Resume target focus"
+                placeholder="Target role or job family"
                 value={template.focus}
                 onChange={(event) => updateResume(index, "focus", event.target.value)}
               />
               <textarea
-                aria-label="Resume template notes"
+                aria-label="Resume notes or link"
+                placeholder="Paste OneDrive/Google Drive link, original file name, or notes on when to use this resume."
                 rows={2}
                 value={template.notes}
                 onChange={(event) => updateResume(index, "notes", event.target.value)}
