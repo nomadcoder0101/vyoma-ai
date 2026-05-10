@@ -443,21 +443,37 @@ async function ensurePilotUser() {
   assertDatabaseConfigured("Profile repository");
   const user = await getCurrentUserOrPilot();
   const sql = getDatabaseSql();
+  if (user.providerUserId) {
+    const existingByProvider = (await sql.query(
+      "select id from users where auth_provider = $1 and auth_provider_user_id = $2 limit 1",
+      ["clerk", user.providerUserId],
+    )) as Array<{ id: string }>;
+    if (existingByProvider[0]?.id) return existingByProvider[0].id;
+  }
+
   const existing = (await sql.query(
     "select id from users where email = $1 limit 1",
     [user.email],
   )) as Array<{ id: string }>;
-  if (existing[0]?.id) return existing[0].id;
+  if (existing[0]?.id) {
+    if (user.providerUserId) {
+      await sql.query(
+        "update users set name = $1, auth_provider = $2, auth_provider_user_id = $3, updated_at = now() where id = $4",
+        [user.name || defaultProfile.candidateName, "clerk", user.providerUserId, existing[0].id],
+      );
+    }
+    return existing[0].id;
+  }
 
   const inserted = (await sql.query(
     [
-      "insert into users (email, name, auth_provider)",
-      "values ($1, $2, $3)",
+      "insert into users (email, name, auth_provider, auth_provider_user_id)",
+      "values ($1, $2, $3, $4)",
       "on conflict (email) do update set",
-      "name = excluded.name, auth_provider = excluded.auth_provider, updated_at = now()",
+      "name = excluded.name, auth_provider = excluded.auth_provider, auth_provider_user_id = excluded.auth_provider_user_id, updated_at = now()",
       "returning id",
     ].join(" "),
-    [user.email, user.name || defaultProfile.candidateName, "vyoma-session"],
+    [user.email, user.name || defaultProfile.candidateName, user.providerUserId ? "clerk" : "vyoma-session", user.providerUserId || null],
   )) as Array<{ id: string }>;
   return inserted[0].id;
 }

@@ -9,6 +9,7 @@ const migrationFiles = [
   "0002_updated_at_triggers.sql",
   "0003_profile_runtime_shape.sql",
   "0004_daily_task_action_ids.sql",
+  "0005_clerk_user_identity.sql",
 ];
 
 loadEnvFile(join(root, ".env.local"));
