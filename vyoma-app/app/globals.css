@@ -94,6 +94,16 @@ textarea {
   gap: 10px;
 }
 
+.authControls {
+  align-items: center;
+  display: inline-flex;
+  gap: 10px;
+}
+
+.heroAuthControls {
+  flex-wrap: wrap;
+}
+
 .nav form {
   margin: 0;
 }
@@ -173,7 +183,7 @@ textarea {
 .landingHero {
   align-items: center;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(246, 248, 251, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 248, 251, 0.98)),
     url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=80");
   background-position: center;
   background-size: cover;
@@ -182,6 +192,13 @@ textarea {
   grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
   min-height: calc(100vh - 64px);
   padding: 54px max(28px, calc((100vw - 1180px) / 2 + 28px)) 56px;
+}
+
+.calmHero {
+  background:
+    linear-gradient(90deg, rgba(246, 248, 251, 0.96), rgba(246, 248, 251, 0.86)),
+    url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=82");
+  background-position: center;
 }
 
 .landingHeroText {
@@ -249,6 +266,58 @@ textarea {
   flex: 0 0 auto;
 }
 
+.comfortPanel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(219, 230, 236, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(18, 53, 91, 0.12);
+  padding: 18px;
+}
+
+.comfortPanelTop {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  margin: -18px -18px 16px;
+  padding: 16px 18px;
+}
+
+.comfortPanelTop span {
+  align-items: center;
+  color: var(--teal);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+}
+
+.comfortPanelTop strong {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.comfortList {
+  display: grid;
+  gap: 10px;
+}
+
+.comfortList span {
+  align-items: center;
+  background: #f9fbfc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  line-height: 1.35;
+  min-height: 48px;
+  padding: 9px 12px;
+}
+
+.comfortList svg {
+  color: var(--teal);
+  flex: 0 0 auto;
+}
+
 .flowBand {
   background: #102a43;
   color: #fff;
@@ -256,6 +325,10 @@ textarea {
   gap: 28px;
   grid-template-columns: minmax(260px, 0.58fr) minmax(0, 1fr);
   padding: 46px max(28px, calc((100vw - 1180px) / 2 + 28px));
+}
+
+.softFlow {
+  background: #17324d;
 }
 
 .flowBand .eyebrow {

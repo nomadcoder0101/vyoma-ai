@@ -1,7 +1,6 @@
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Settings } from "lucide-react";
 import { navItems } from "../lib/content";
+import { AuthControls } from "./auth-controls";
 
 export function Topbar() {
   return (
@@ -19,19 +18,7 @@ export function Topbar() {
             {item.label}
           </Link>
         ))}
-        <Show when="signed-out">
-          <SignInButton mode="modal">Sign in</SignInButton>
-          <SignUpButton mode="modal">Sign up</SignUpButton>
-        </Show>
-        <Show when="signed-in">
-          <Link className="button primary" href="/dashboard">
-            Open App <ArrowRight size={16} />
-          </Link>
-          <Link className="iconOnly" href="/settings" aria-label="Settings" title="Settings">
-            <Settings size={18} />
-          </Link>
-          <UserButton />
-        </Show>
+        <AuthControls />
       </nav>
     </header>
   );

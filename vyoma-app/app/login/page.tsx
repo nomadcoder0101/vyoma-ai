@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import {
   ArrowRight,
   CheckCircle2,
@@ -14,6 +13,7 @@ import {
   authProviderOptions,
   protectedRouteGroups,
 } from "../../lib/auth-plan";
+import { AuthControls } from "../auth-controls";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 
 const fitLabels = {
@@ -55,20 +55,9 @@ export default async function LoginPage({
                 Use Clerk sign-in so profile, tracker, leads, daily actions, and assistant memory stay scoped to the account.
               </p>
               {params.error ? <p className="formError">Sign-in could not be completed.</p> : null}
-              <Show when="signed-in">
-                <div className="loginActions">
-                  <Link className="button primary" href={next}>
-                    Continue <ArrowRight size={16} />
-                  </Link>
-                  <UserButton />
-                </div>
-              </Show>
-              <Show when="signed-out">
-                <div className="loginActions">
-                  <SignInButton mode="modal" fallbackRedirectUrl={next}>Sign in</SignInButton>
-                  <SignUpButton mode="modal" fallbackRedirectUrl="/onboarding">Create account</SignUpButton>
-                </div>
-              </Show>
+              <div className="loginActions">
+                <AuthControls variant="login" signInRedirectUrl={next} signUpRedirectUrl="/onboarding" />
+              </div>
             </div>
           </div>
 

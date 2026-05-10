@@ -1,35 +1,36 @@
-import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgeCheck,
   BrainCircuit,
   CalendarCheck2,
   FileText,
   ListChecks,
   MessageSquareText,
+  Search,
   ShieldCheck,
+  Sparkles,
   Target,
   UserRoundCheck,
 } from "lucide-react";
+import { AuthControls } from "./auth-controls";
 import { Feature, Footer, Topbar } from "./components";
 
 const journey = [
   {
-    title: "Create the career profile",
-    text: "Capture the candidate story, resumes, work authorization, preferred locations, and role targets.",
+    title: "Set up your search",
+    text: "Add your profile, preferred roles, locations, resume versions, and the reason you are looking.",
   },
   {
-    title: "Review the daily plan",
-    text: "Start each day with follow-ups, lead review, search shortcuts, and outreach tasks.",
+    title: "Know what matters today",
+    text: "See a focused daily plan instead of waking up to a blank, stressful job board.",
   },
   {
-    title: "Evaluate leads before applying",
-    text: "Paste job or recruiter links, score the fit, draft outreach, and convert strong leads into tracker rows.",
+    title: "Choose better opportunities",
+    text: "Save jobs, recruiters, or companies as leads and review them before spending energy.",
   },
   {
-    title: "Let memory improve the search",
-    text: "The assistant remembers profile decisions, tracker outcomes, and search patterns for better recommendations.",
+    title: "Keep learning from progress",
+    text: "Use tracker history and assistant memory to improve follow-ups, resumes, and outreach.",
   },
 ];
 
@@ -37,38 +38,38 @@ const appAreas = [
   {
     href: "/onboarding",
     icon: <UserRoundCheck size={20} />,
-    title: "Profile Setup",
-    text: "The source of truth for positioning, sponsorship, resume variants, and target markets.",
+    title: "Profile",
+    text: "Your story, target roles, locations, resume versions, constraints, and preferences.",
   },
   {
     href: "/daily-plan",
     icon: <CalendarCheck2 size={20} />,
     title: "Daily Plan",
-    text: "A practical checklist for what to do today, not a vague list of ideas.",
+    text: "A short list of today’s actions so the search feels manageable.",
   },
   {
     href: "/leads",
     icon: <Target size={20} />,
-    title: "Lead Review",
-    text: "Evaluate jobs, recruiters, and companies before spending time on them.",
+    title: "Leads",
+    text: "Capture job links, recruiters, companies, referrals, or ideas before deciding what to do.",
   },
   {
     href: "/tracker",
     icon: <ListChecks size={20} />,
-    title: "Application Tracker",
-    text: "Know what has been applied, what needs follow-up, and what is going cold.",
+    title: "Tracker",
+    text: "Applications, follow-ups, outcomes, and status changes in one place.",
   },
   {
     href: "/resume",
     icon: <FileText size={20} />,
     title: "Resume Studio",
-    text: "Choose the right resume version for each AML, KYC, ECDD, or reporting role.",
+    text: "Pick the strongest resume version and positioning for each opportunity.",
   },
   {
     href: "/assistant",
     icon: <BrainCircuit size={20} />,
-    title: "AI Assistant",
-    text: "Ask profile-aware questions and draft next actions with the latest context.",
+    title: "Assistant",
+    text: "Ask for next steps, role fit, outreach drafts, and profile-aware guidance.",
   },
 ];
 
@@ -78,49 +79,41 @@ export default function Home() {
       <Topbar />
 
       <main>
-        <section className="landingHero">
+        <section className="landingHero calmHero">
           <div className="landingHeroText">
-            <p className="eyebrow">Vyoma AI career operations</p>
-            <h1>One calm workspace for a serious job search.</h1>
+            <p className="eyebrow">Vyoma AI job search workspace</p>
+            <h1>A calmer way to run your job search.</h1>
             <p>
-              Vyoma AI helps a candidate move from scattered applications to a
-              daily operating rhythm: profile, tracker, leads, resume choice,
-              outreach, and AI memory in one place.
+              Job hunting can become noisy very quickly. Vyoma AI gives you one
+              private workspace to organize your profile, applications, leads,
+              resumes, follow-ups, and AI guidance.
             </p>
             <div className="heroActions">
-              <Show when="signed-out">
-                <SignUpButton mode="modal">Create account</SignUpButton>
-                <SignInButton mode="modal">Sign in</SignInButton>
-              </Show>
-              <Show when="signed-in">
-                <Link className="button primary" href="/dashboard">
-                  Open dashboard <ArrowRight size={16} />
-                </Link>
-              </Show>
+              <AuthControls variant="hero" />
               <Link className="button secondary" href="#how-it-works">
-                See how it works
+                See the flow
               </Link>
             </div>
           </div>
 
-          <div className="commandPreview" aria-label="Vyoma workflow preview">
-            <div className="commandPreviewTop">
-              <span>Today</span>
-              <strong>Job search command center</strong>
+          <div className="comfortPanel" aria-label="Job search workflow preview">
+            <div className="comfortPanelTop">
+              <span><Sparkles size={16} /> Today feels clearer</span>
+              <strong>Small steps, visible progress</strong>
             </div>
-            <div className="commandPreviewRows">
-              <span><BadgeCheck size={16} /> Confirm profile and resume map</span>
-              <span><ListChecks size={16} /> Follow up on warm applications</span>
-              <span><Target size={16} /> Evaluate new recruiter and job leads</span>
-              <span><MessageSquareText size={16} /> Draft outreach before sending</span>
+            <div className="comfortList">
+              <span><Search size={16} /> Review only the most useful opportunities</span>
+              <span><MessageSquareText size={16} /> Draft outreach without starting from scratch</span>
+              <span><ListChecks size={16} /> Follow up before good applications go cold</span>
+              <span><ShieldCheck size={16} /> Keep personal career data private to your account</span>
             </div>
           </div>
         </section>
 
-        <section className="flowBand" id="how-it-works">
+        <section className="flowBand softFlow" id="how-it-works">
           <div className="flowIntro">
-            <p className="eyebrow">How the app guides the user</p>
-            <h2>Start with identity, then work the search every day.</h2>
+            <p className="eyebrow">A simple path</p>
+            <h2>From overwhelmed to organized.</h2>
           </div>
           <div className="journeyGrid">
             {journey.map((step, index) => (
@@ -135,10 +128,10 @@ export default function Home() {
 
         <section className="main landingMain">
           <div className="sectionTitle">
-            <h2>What you can do inside</h2>
+            <h2>Everything has a clear place</h2>
             <p>
-              Each area has a job in the workflow, so a new user knows where
-              to go and why it matters.
+              The app is designed around the real rhythm of a job search:
+              prepare, search, evaluate, apply, follow up, and learn.
             </p>
           </div>
           <div className="appAreaGrid">
@@ -159,18 +152,18 @@ export default function Home() {
           <div className="grid3">
             <Feature
               icon={<ShieldCheck size={20} />}
-              title="Private by account"
-              text="Clerk authentication and Postgres storage keep career data scoped to the signed-in user."
+              title="Private workspace"
+              text="Authentication and database storage keep each user’s career data scoped to their own account."
             />
             <Feature
               icon={<BrainCircuit size={20} />}
-              title="AI with memory"
-              text="The assistant uses profile, tracker, leads, and memory context rather than generic advice."
+              title="Context-aware help"
+              text="The assistant can use profile, tracker, leads, resume, and memory context when making suggestions."
             />
             <Feature
               icon={<Target size={20} />}
-              title="Built for hard searches"
-              text="The pilot handles sponsorship, relocation, APAC remote options, and role-specific positioning."
+              title="Built for real-life searches"
+              text="Use it for any role, industry, location preference, career change, relocation, or remote search."
             />
           </div>
         </section>
