@@ -1039,6 +1039,22 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.resumeParseSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.resumeParseSummary span:not(.tag) {
+  background: #eef5f4;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
 .resumeRow {
   background: #f9fbfc;
   border: 1px solid var(--line);

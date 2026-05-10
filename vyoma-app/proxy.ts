@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+  if (isLocalE2eRequest(request)) return;
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
@@ -18,3 +19,11 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
+
+function isLocalE2eRequest(request: Request) {
+  return (
+    process.env.E2E_TEST_MODE === "true" &&
+    Boolean(process.env.E2E_TEST_TOKEN) &&
+    request.headers.get("x-vyoma-e2e-token") === process.env.E2E_TEST_TOKEN
+  );
+}

@@ -1,4 +1,5 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { headers } from "next/headers";
 
 export type AuthUser = {
   email: string;
@@ -12,6 +13,9 @@ const defaultPilotUser: AuthUser = {
 };
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
+  const e2eUser = await getLocalE2eUser();
+  if (e2eUser) return e2eUser;
+
   const session = await auth();
   if (!session.userId) return null;
 
@@ -36,6 +40,23 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     name: name || email,
     providerUserId: session.userId,
   };
+}
+
+async function getLocalE2eUser(): Promise<AuthUser | null> {
+  if (process.env.E2E_TEST_MODE !== "true" || !process.env.E2E_TEST_TOKEN) return null;
+
+  try {
+    const requestHeaders = await headers();
+    if (requestHeaders.get("x-vyoma-e2e-token") !== process.env.E2E_TEST_TOKEN) return null;
+    const email = normalizeEmail(requestHeaders.get("x-vyoma-test-email") || "test@vyomaai.in");
+    return {
+      email,
+      name: "Vyoma Test",
+      providerUserId: `e2e:${email}`,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getCurrentUserOrPilot(): Promise<AuthUser> {

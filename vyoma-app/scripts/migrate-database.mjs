@@ -10,6 +10,7 @@ const migrationFiles = [
   "0003_profile_runtime_shape.sql",
   "0004_daily_task_action_ids.sql",
   "0005_clerk_user_identity.sql",
+  "0006_resume_file_details.sql",
 ];
 
 loadEnvFile(join(root, ".env.local"));

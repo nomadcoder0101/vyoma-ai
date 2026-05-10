@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BadgeCheck, BrainCircuit, ExternalLink, FileText, Plus, Send, Save, Sparkles, Upload } from "lucide-react";
+import { BadgeCheck, BrainCircuit, Download, ExternalLink, FileText, Plus, Send, Save, Sparkles, Upload } from "lucide-react";
 import type { CareerProfile } from "../../lib/profile";
 
 export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerProfile }) {
@@ -25,7 +25,7 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
     );
   }
 
-  function updateResume(index: number, key: "name" | "focus" | "notes" | "fileUrl", value: string) {
+  function updateResume(index: number, key: "name" | "focus" | "notes" | "fileUrl" | "userComment", value: string) {
     setProfile((current) => ({
       ...current,
       confirmed: false,
@@ -46,7 +46,16 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
         method: "POST",
         body: formData,
       });
-      const body = (await response.json()) as { fileName?: string; fileUrl?: string; error?: string };
+      const body = (await response.json()) as {
+        fileName?: string;
+        fileUrl?: string;
+        size?: number;
+        contentType?: string;
+        fullText?: string;
+        parsedSummary?: CareerProfile["resumeTemplates"][number]["parsedSummary"];
+        uploadedAt?: string;
+        error?: string;
+      };
       if (!response.ok || !body.fileUrl) {
         setMessage(body.error || "Could not upload resume.");
         return;
@@ -62,6 +71,12 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                 ...template,
                 name: template.name.startsWith("New resume") ? uploadedName || template.name : template.name,
                 fileUrl: uploadedUrl,
+                fileName: uploadedName,
+                fileSize: body.size,
+                contentType: body.contentType,
+                fullText: body.fullText,
+                parsedSummary: body.parsedSummary,
+                uploadedAt: body.uploadedAt,
                 notes: template.notes.includes(uploadedUrl)
                   ? template.notes
                   : `${template.notes}\nUploaded file: ${uploadedUrl}`.trim(),
@@ -69,7 +84,7 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
             : template,
         ),
       }));
-      setMessage("Resume uploaded. Save the profile to keep this file attached.");
+      setMessage("Resume uploaded and parsed. Save the profile to keep this file attached.");
     } catch {
       setMessage("Could not reach the resume upload service.");
     } finally {
@@ -281,9 +296,25 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                   <span>{template.focus}</span>
                   <p>{template.notes}</p>
                   {template.fileUrl ? (
+                    <a className="inlineLink" href={`/api/resume/download?index=${index}`}>
+                      Download attached file <Download size={14} />
+                    </a>
+                  ) : null}
+                  {template.fileUrl ? (
                     <a className="inlineLink" href={template.fileUrl} target="_blank" rel="noreferrer">
                       Open attached file <ExternalLink size={14} />
                     </a>
+                  ) : null}
+                  {template.parsedSummary ? (
+                    <div className="resumeParseSummary">
+                      <span className={`tag ${template.parsedSummary.status === "parsed" ? "teal" : "amber"}`}>
+                        {template.parsedSummary.status || "pending"}
+                      </span>
+                      <span>{template.parsedSummary.wordCount || 0} words parsed</span>
+                      {template.parsedSummary.roleSignals?.length ? (
+                        <span>{template.parsedSummary.roleSignals.join(", ")}</span>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               </article>
@@ -310,6 +341,13 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                 rows={2}
                 value={template.notes}
                 onChange={(event) => updateResume(index, "notes", event.target.value)}
+              />
+              <textarea
+                aria-label="Resume comment"
+                placeholder="Add your comment for this resume: strengths, concerns, best role type, or follow-up note."
+                rows={2}
+                value={template.userComment || ""}
+                onChange={(event) => updateResume(index, "userComment", event.target.value)}
               />
               <input
                 aria-label="Attached resume file URL"

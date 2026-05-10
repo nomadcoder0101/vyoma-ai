@@ -39,6 +39,13 @@ create table if not exists resume_variants (
   focus text not null default '',
   notes text not null default '',
   file_url text,
+  file_name text,
+  file_size integer,
+  content_type text,
+  full_text text,
+  parsed_summary jsonb not null default '{}'::jsonb,
+  user_comment text not null default '',
+  uploaded_at timestamptz,
   created_at timestamptz not null default now()
 );
 

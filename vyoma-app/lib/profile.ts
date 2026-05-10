@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getCurrentUserOrPilot } from "./auth";
 import { assertDatabaseConfigured, getDatabaseSql } from "./database";
+import type { ParsedResumeSummary } from "./resume-parser";
 import { assertWritableStorage, getStorageMode, type StorageMode } from "./storage-adapter";
 
 export type ResumeTemplate = {
@@ -9,6 +10,13 @@ export type ResumeTemplate = {
   focus: string;
   notes: string;
   fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  contentType?: string;
+  fullText?: string;
+  parsedSummary?: ParsedResumeSummary;
+  userComment?: string;
+  uploadedAt?: string;
 };
 
 export type CareerProfile = {
@@ -419,6 +427,13 @@ type ResumeVariantRow = {
   focus: string;
   notes: string;
   file_url: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  content_type: string | null;
+  full_text: string | null;
+  parsed_summary: ParsedResumeSummary | null;
+  user_comment: string | null;
+  uploaded_at: string | null;
 };
 
 const blockedSyncPostgresProfileRepository: ProfileRepository = {
@@ -493,7 +508,7 @@ async function loadPostgresProfile(): Promise<CareerProfile> {
   }
 
   const resumeRows = (await sql.query(
-    "select name, focus, notes, file_url from resume_variants where profile_id = (select id from profiles where user_id = $1 and external_id = $2 limit 1) order by created_at asc",
+    "select name, focus, notes, file_url, file_name, file_size, content_type, full_text, parsed_summary, user_comment, uploaded_at from resume_variants where profile_id = (select id from profiles where user_id = $1 and external_id = $2 limit 1) order by created_at asc",
     [userId, defaultProfile.id],
   )) as ResumeVariantRow[];
 
@@ -516,6 +531,13 @@ async function loadPostgresProfile(): Promise<CareerProfile> {
           focus: row.focus,
           notes: row.notes,
           fileUrl: row.file_url || undefined,
+          fileName: row.file_name || undefined,
+          fileSize: row.file_size || undefined,
+          contentType: row.content_type || undefined,
+          fullText: row.full_text || undefined,
+          parsedSummary: row.parsed_summary || undefined,
+          userComment: row.user_comment || undefined,
+          uploadedAt: row.uploaded_at || undefined,
         }))
       : defaultProfile.resumeTemplates,
     confirmed: Boolean(rows[0].confirmed_at),
@@ -566,8 +588,25 @@ async function savePostgresProfile(profile: CareerProfile): Promise<CareerProfil
   await sql.query("delete from resume_variants where profile_id = $1", [profileId]);
   for (const template of nextProfile.resumeTemplates) {
     await sql.query(
-      "insert into resume_variants (profile_id, name, focus, notes, file_url) values ($1, $2, $3, $4, $5)",
-      [profileId, template.name, template.focus, template.notes, template.fileUrl || null],
+      [
+        "insert into resume_variants",
+        "(profile_id, name, focus, notes, file_url, file_name, file_size, content_type, full_text, parsed_summary, user_comment, uploaded_at)",
+        "values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12)",
+      ].join(" "),
+      [
+        profileId,
+        template.name,
+        template.focus,
+        template.notes,
+        template.fileUrl || null,
+        template.fileName || null,
+        template.fileSize || null,
+        template.contentType || null,
+        template.fullText || null,
+        JSON.stringify(template.parsedSummary || {}),
+        template.userComment || "",
+        template.uploadedAt || null,
+      ],
     );
   }
 

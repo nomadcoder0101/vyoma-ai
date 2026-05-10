@@ -74,7 +74,7 @@ See `docs/DATABASE_PROVIDER.md` for the selected Neon through Vercel Marketplace
 | Assistant memory | `assistant-memory.json` | `assistant_messages`, `memories` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
 | Daily tasks | `daily-actions.json` | `daily_tasks` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
 | Integrations | none | `integration_accounts` | Encrypted Postgres storage exists; provider OAuth flows need approved app credentials |
-| Resume files | none | `resume_variants.file_url` plus blob storage | Upload endpoint exists; activation requires `BLOB_READ_WRITE_TOKEN` |
+| Resume files | none | `resume_variants.file_url`, metadata, `full_text`, `parsed_summary`, comments, plus blob storage | Upload, download, and PDF/DOCX parsing are implemented; activation requires `BLOB_READ_WRITE_TOKEN` |
 
 ## Safety Rule
 

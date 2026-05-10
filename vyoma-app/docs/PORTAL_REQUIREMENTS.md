@@ -23,6 +23,8 @@ The first seeded profile is Samruddhi Chougule, AML/KYC and Financial Crime Comp
 
 Production authentication is active through Clerk. User-scoped data is stored in Postgres when `VYOMA_STORAGE_MODE=postgres`.
 
+The account model is one account to one active candidate profile for now. Vyoma AI is Samruddhi-first during the pilot, with an admin/manager experience planned only after the core workflow is stable enough to become a broader product.
+
 ## Data Needed Per Profile
 
 - Personal and contact-safe profile basics
@@ -32,6 +34,7 @@ Production authentication is active through Clerk. User-scoped data is stored in
 - Target role families
 - Salary expectations
 - Resume versions and which role type each version supports
+- Uploaded resume file, full extracted text, parsed signals, and user comments
 - Profile summary, reason for job change, strengths, constraints, and positioning notes
 - Existing application tracker history
 - Lead queue history
@@ -71,7 +74,7 @@ Production authentication is active through Clerk. User-scoped data is stored in
 
 - Production auth through Clerk
 - Database storage per user/profile
-- Resume upload through blob storage, then parsing
+- Resume upload through blob storage with automatic PDF/DOCX parsing
 - OpenAI assistant/API integration
 - LinkedIn official OAuth where supported
 - Deployment on Vercel under app.vyomaai.in

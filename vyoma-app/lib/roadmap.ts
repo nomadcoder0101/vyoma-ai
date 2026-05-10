@@ -86,9 +86,9 @@ export const roadmap: RoadmapItem[] = [
   },
   {
     area: "Resume",
-    status: "next",
+    status: "done",
     title: "Direct resume file upload",
-    detail: "Resume names, links, and usage notes are saved now. Next step is blob storage for direct file uploads and parsing.",
+    detail: "Direct upload, protected download, comments, full text storage, and automatic PDF/DOCX parsing are implemented.",
   },
   {
     area: "Integrations",

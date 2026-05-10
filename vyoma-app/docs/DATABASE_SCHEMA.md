@@ -64,6 +64,13 @@ Stores resume versions and role-family positioning.
 | `focus` | text | Target role family |
 | `notes` | text | Usage notes |
 | `file_url` | text | Optional uploaded file location |
+| `file_name` | text | Original uploaded file name |
+| `file_size` | integer | Uploaded file size in bytes |
+| `content_type` | text | Uploaded MIME type |
+| `full_text` | text | Full extracted resume text when parsing succeeds |
+| `parsed_summary` | jsonb | Parser status, word counts, sections, role signals, and notes |
+| `user_comment` | text | User-entered comment about the resume version |
+| `uploaded_at` | timestamptz | Upload timestamp |
 | `created_at` | timestamptz | Created timestamp |
 
 ### `applications`
@@ -198,6 +205,7 @@ The first provider-neutral Postgres migrations live in `migrations/`.
 | --- | --- |
 | `migrations/0001_initial_schema.sql` | Creates core tables, constraints, and indexes |
 | `migrations/0002_updated_at_triggers.sql` | Keeps mutable `updated_at` columns current |
+| `migrations/0006_resume_file_details.sql` | Adds resume file metadata, full text, parsed summaries, and comments |
 
 ## Privacy Rules
 

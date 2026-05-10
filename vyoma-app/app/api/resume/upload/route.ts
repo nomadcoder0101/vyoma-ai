@@ -1,5 +1,6 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { parseResumeFile } from "../../../../lib/resume-parser";
 
 const allowedTypes = new Set([
   "application/pdf",
@@ -37,11 +38,15 @@ export async function POST(request: Request) {
     access: "public",
     addRandomSuffix: true,
   });
+  const parsed = await parseResumeFile(file);
 
   return NextResponse.json({
     fileName: file.name,
     fileUrl: blob.url,
     size: file.size,
     contentType: file.type,
+    fullText: parsed.fullText,
+    parsedSummary: parsed.parsedSummary,
+    uploadedAt: new Date().toISOString(),
   });
 }

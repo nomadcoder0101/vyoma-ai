@@ -173,7 +173,7 @@ export default function SettingsPage() {
                   {process.env.BLOB_READ_WRITE_TOKEN ? "Ready" : "Needs blob storage"}
                 </span>
                 <span>
-                  Upload endpoint is implemented. Add BLOB_READ_WRITE_TOKEN before accepting uploaded resume files.
+                  Upload, protected download, comments, full-text storage, and PDF/DOCX parsing are implemented.
                 </span>
               </div>
             </article>

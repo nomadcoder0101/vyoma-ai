@@ -79,11 +79,11 @@ export const storageCapabilities: StorageCapability[] = [
   {
     area: "Resume files",
     local: false,
-    postgres: false,
-    repository: false,
+    postgres: true,
+    repository: true,
     localSource: "manual file references only",
-    postgresTarget: "resume_variants.file_url plus blob storage",
-    detail: "Resume metadata and cloud links are saved with the profile. Direct binary upload needs blob storage.",
+    postgresTarget: "resume_variants.file_url, metadata, full_text, parsed_summary, comments plus blob storage",
+    detail: "Resume uploads, protected downloads, parsed text, role signals, and user comments are saved with the profile.",
   },
 ];
 

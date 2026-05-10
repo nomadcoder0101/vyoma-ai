@@ -63,11 +63,21 @@ Live aliases:
 
 ## Remaining Production Work
 
-- Add `BLOB_READ_WRITE_TOKEN` in Vercel and local `.env.local` to activate direct resume uploads.
-- Add resume parsing after uploads are active.
+- Keep `BLOB_READ_WRITE_TOKEN` in Vercel and local `.env.local` to keep direct resume uploads active.
+- Improve resume parser quality after real uploaded samples are reviewed.
 - Add official LinkedIn OAuth credentials and approved scopes.
 - Add official OAuth integrations where available.
 - Keep LinkedIn password collection out of scope.
+
+## Local Signed-In Smoke Test
+
+The local Playwright smoke test uses a gated test session instead of real user credentials.
+
+```powershell
+npm.cmd run test:e2e
+```
+
+The test server runs on port `3100` with `E2E_TEST_MODE=true`, sends a private `x-vyoma-e2e-token` header, uses `test@vyomaai.in` as the app identity, and deletes that test account's app data after the run.
 
 See `docs/AUTHENTICATION.md` for the recommended auth provider, route protection plan, and privacy rules.
 See `docs/MIGRATION_PLAN.md` and `migrations/` for the Postgres migration scaffold.
