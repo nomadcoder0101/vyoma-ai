@@ -9,7 +9,7 @@ export function Topbar() {
         <span className="brandMark">V</span>
         <span className="brandText">
           <strong>Vyoma AI</strong>
-          <span>Career operations dashboard</span>
+          <span>Job search workspace</span>
         </span>
       </Link>
       <nav className="nav" aria-label="Main navigation">
@@ -27,8 +27,7 @@ export function Topbar() {
 export function Footer() {
   return (
     <footer className="footer">
-      Vyoma AI is in pilot mode. Responsible AI-assisted career operations,
-      with the human in control.
+      Vyoma AI keeps job-search work organized, private, and human-led.
     </footer>
   );
 }

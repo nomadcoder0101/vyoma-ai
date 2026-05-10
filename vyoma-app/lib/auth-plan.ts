@@ -55,18 +55,18 @@ export const authMilestones: AuthMilestone[] = [
     status: "ready",
   },
   {
-    title: "Migrate local pilot data",
-    detail: "Import Samruddhi's current profile, tracker, leads, memory, and daily actions under the first real user account.",
-    status: "later",
+    title: "Production Clerk keys",
+    detail: "Clerk publishable and secret keys are configured locally and in Vercel.",
+    status: "ready",
   },
   {
-    title: "Add Clerk environment keys",
-    detail: "Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY locally and in Vercel before production sign-in testing.",
+    title: "Signed-in smoke coverage",
+    detail: "Add Clerk test-session coverage so automated smoke tests can verify signed-in APIs.",
     status: "next",
   },
   {
     title: "Add OAuth integrations",
-    detail: "Add official LinkedIn OAuth only after encrypted token storage is implemented.",
+    detail: "Add official provider OAuth flows after approved app credentials are available.",
     status: "later",
   },
 ];

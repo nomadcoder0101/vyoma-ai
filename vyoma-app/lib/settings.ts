@@ -53,6 +53,13 @@ export function loadSettingsStatus() {
       detail: database.detail,
     },
     {
+      label: "Resume file upload",
+      ready: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      detail: process.env.BLOB_READ_WRITE_TOKEN
+        ? "Blob storage is configured for direct resume uploads."
+        : "Resume names, links, and usage notes are saved now. Add blob storage before direct file uploads.",
+    },
+    {
       label: "LinkedIn OAuth",
       ready: Boolean(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET),
       detail: "Use official OAuth only; do not collect LinkedIn passwords.",

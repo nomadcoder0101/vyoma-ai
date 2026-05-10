@@ -1,32 +1,7 @@
+import { ArrowRight, LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock3,
-  KeyRound,
-  LockKeyhole,
-  ShieldCheck,
-  UserRoundCheck,
-} from "lucide-react";
-import {
-  authMilestones,
-  authProviderOptions,
-  protectedRouteGroups,
-} from "../../lib/auth-plan";
 import { AuthControls } from "../auth-controls";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
-
-const fitLabels = {
-  recommended: "Recommended",
-  viable: "Viable",
-  later: "Later",
-};
-
-const statusIcons = {
-  ready: CheckCircle2,
-  next: Clock3,
-  later: LockKeyhole,
-};
 
 export default async function LoginPage({
   searchParams,
@@ -43,16 +18,17 @@ export default async function LoginPage({
         <section className="section loginShell">
           <div>
             <SectionTitle
-              title="Account Login"
-              text="Sign in to keep profile, tracker, leads, daily actions, and assistant memory scoped to one account."
+              title="Welcome Back"
+              text="Sign in to continue your job-search workspace, or create an account if this is your first visit."
             />
             <div className="loginCard">
               <span className="cardIcon">
                 <UserRoundCheck size={20} />
               </span>
-              <h3>Create or access account</h3>
+              <h3>Your private workspace</h3>
               <p>
-                Use Clerk sign-in so profile, tracker, leads, daily actions, and assistant memory stay scoped to the account.
+                Your profile, resume versions, leads, tracker, daily plan, and
+                assistant memory stay connected to your signed-in account.
               </p>
               {params.error ? <p className="formError">Sign-in could not be completed.</p> : null}
               <div className="loginActions">
@@ -63,106 +39,39 @@ export default async function LoginPage({
 
           <aside className="panel">
             <div className="panelHeader">
-              <strong>Production auth choice</strong>
-              <span className="statusPill">Next</span>
+              <strong>After login</strong>
+              <span className="statusPill">Guided</span>
             </div>
             <span className="cardIcon">
               <LockKeyhole size={20} />
             </span>
-            <h3>Active provider: Clerk</h3>
-            <p>
-              Clerk now handles secure login, session UI, and route protection.
-              Add the Clerk environment keys locally and in Vercel to activate
-              real sign-in.
+            <h3>Start where it matters</h3>
+            <p className="settingsAsideText">
+              New users should confirm the profile first. Returning users can
+              go straight to the dashboard and daily plan.
             </p>
-            <Link className="button secondary cardButton" href="/settings">
-              View readiness <ArrowRight size={16} />
+            <Link className="button secondary cardButton" href="/dashboard">
+              Open dashboard <ArrowRight size={16} />
             </Link>
-          </aside>
-        </section>
-
-        <section className="section">
-          <SectionTitle
-            title="Auth Provider Options"
-            text="The practical choices for turning this pilot into a real account-based product."
-          />
-          <div className="authOptionGrid">
-            {authProviderOptions.map((option) => (
-              <article className="authOption" key={option.name}>
-                <div className="schemaTableTop">
-                  <strong>{option.name}</strong>
-                  <span className={`tag ${option.fit === "recommended" ? "teal" : "amber"}`}>
-                    {fitLabels[option.fit]}
-                  </span>
-                </div>
-                <p>{option.summary}</p>
-                <span>{option.tradeoff}</span>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="section loginShell">
-          <div className="panel">
-            <div className="panelHeader">
-              <strong>Implementation milestones</strong>
-              <span className="statusPill">Auth boundary</span>
-            </div>
-            <div className="settingsList">
-              {authMilestones.map((milestone) => {
-                const Icon = statusIcons[milestone.status];
-                return (
-                  <article className="settingsItem" key={milestone.title}>
-                    <span className="cardIcon">
-                      <Icon size={20} />
-                    </span>
-                    <div>
-                      <div className="settingsItemTop">
-                        <strong>{milestone.title}</strong>
-                        <span className={`tag ${milestone.status === "next" ? "amber" : "teal"}`}>
-                          {milestone.status}
-                        </span>
-                      </div>
-                      <p>{milestone.detail}</p>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-
-          <aside className="panel">
-            <div className="panelHeader">
-              <strong>Protected app areas</strong>
-              <span className="statusPill">{protectedRouteGroups.length} routes</span>
-            </div>
-            <div className="protectedRouteList">
-              {protectedRouteGroups.map((route) => (
-                <span key={route}>
-                  <ShieldCheck size={16} />
-                  {route}
-                </span>
-              ))}
-            </div>
           </aside>
         </section>
 
         <section className="section">
           <div className="grid3">
             <Feature
-              icon={<KeyRound size={20} />}
-              title="Account ownership"
-              text="Every tracker row, lead, profile, memory item, and resume variant must belong to a signed-in account."
+              icon={<ShieldCheck size={20} />}
+              title="Account scoped"
+              text="Career data is scoped to the signed-in user and stored in Postgres in production."
             />
             <Feature
-              icon={<ShieldCheck size={20} />}
-              title="Private career data"
-              text="Resumes, visa notes, tracker history, and assistant memory are private user data."
+              icon={<UserRoundCheck size={20} />}
+              title="Profile first"
+              text="Your profile powers lead scoring, resume choice, outreach, and assistant recommendations."
             />
             <Feature
               icon={<LockKeyhole size={20} />}
-              title="OAuth later"
-              text="LinkedIn and other integrations should use official OAuth after login and database ownership are stable."
+              title="No password storage here"
+              text="Authentication is handled by Clerk; Vyoma does not store account passwords."
             />
           </div>
         </section>

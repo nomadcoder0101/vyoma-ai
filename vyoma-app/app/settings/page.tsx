@@ -16,15 +16,15 @@ import { Feature, Footer, MetricCard, SectionTitle, Topbar } from "../components
 
 const checkIcons: Record<string, React.ComponentType<{ size?: number }>> = {
   "OpenAI API key": Bot,
-  Authentication: LockKeyhole,
+  "Clerk authentication": LockKeyhole,
   Database,
+  "Resume file upload": FileText,
   "LinkedIn OAuth": Link2,
 };
 
 export default function SettingsPage() {
   const status = loadSettingsStatus();
   const readyChecks = status.productionChecks.filter((check) => check.ready).length;
-  const presentFiles = status.storageFiles.filter((file) => file.exists).length;
 
   return (
     <div className="shell">
@@ -33,12 +33,12 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Settings"
-            text="Readiness view for signed sessions, AI configuration, Postgres storage, integrations, and remaining production hardening."
+            text="Readiness view for authentication, AI, Postgres storage, resume uploads, integrations, and deployment health."
           />
           <div className="metricGrid dashboardMetrics">
             <MetricCard value={readyChecks} label="Production checks ready" />
             <MetricCard value={status.openAiConfigured ? "AI" : "Local"} label="Assistant mode" />
-            <MetricCard value={presentFiles} label="Local data files found" />
+            <MetricCard value={status.storageAdapter.mode === "postgres" ? "Postgres" : "Local"} label="Runtime storage" />
             <MetricCard value={status.storageAdapter.parity.converted} label="Storage adapters converted" />
           </div>
         </section>
@@ -75,7 +75,7 @@ export default function SettingsPage() {
           <aside className="panel">
             <div className="panelHeader">
               <strong>Runtime</strong>
-              <span className="statusPill">Pilot</span>
+              <span className="statusPill">Live</span>
             </div>
             <div className="settingsFacts">
               <div>
@@ -106,7 +106,7 @@ export default function SettingsPage() {
           <div className="panel">
             <div className="panelHeader">
               <strong>Authentication boundary</strong>
-              <span className="statusPill">Next production slice</span>
+              <span className="statusPill">Clerk active</span>
             </div>
             <div className="settingsList">
               {authMilestones.slice(0, 3).map((milestone) => (
@@ -115,9 +115,11 @@ export default function SettingsPage() {
                     <LockKeyhole size={20} />
                   </span>
                   <div>
-                    <div className="settingsItemTop">
-                      <strong>{milestone.title}</strong>
-                      <span className="tag amber">{milestone.status}</span>
+                      <div className="settingsItemTop">
+                        <strong>{milestone.title}</strong>
+                        <span className={`tag ${milestone.status === "ready" ? "teal" : "amber"}`}>
+                          {milestone.status}
+                        </span>
                     </div>
                     <p>{milestone.detail}</p>
                   </div>
@@ -128,17 +130,50 @@ export default function SettingsPage() {
 
           <aside className="panel">
             <div className="panelHeader">
-              <strong>Auth recommendation</strong>
+              <strong>Account provider</strong>
               <span className="statusPill">Clerk</span>
             </div>
             <p className="settingsAsideText">
-              The app now has a first-party signed session boundary. Clerk remains
-              the upgrade path for hosted account UI and social login.
+              Clerk is active for sign-in, sign-up, hosted account UI, route
+              protection, and stable user identity mapping.
             </p>
             <Link className="button secondary cardButton" href="/login">
-              Open login plan
+              Open account page
             </Link>
           </aside>
+        </section>
+
+        <section className="section">
+          <SectionTitle
+            title="Resume Upload Status"
+            text="Resume versions can be saved today as names, role focus, notes, and cloud links. Direct upload needs blob storage."
+          />
+          <div className="settingsFileGrid">
+            <article className="settingsFile">
+              <FileText size={18} />
+              <div>
+                <strong>Resume metadata</strong>
+                <span className="tag teal">Ready</span>
+                <span>Saved in the profile as resume/CV versions and used by Resume Studio recommendations.</span>
+              </div>
+            </article>
+            <article className="settingsFile">
+              <FileText size={18} />
+              <div>
+                <strong>Cloud links</strong>
+                <span className="tag teal">Ready</span>
+                <span>Paste OneDrive, Google Drive, or file reference links in the resume notes field.</span>
+              </div>
+            </article>
+            <article className="settingsFile">
+              <ServerCog size={18} />
+              <div>
+                <strong>Direct file upload</strong>
+                <span className="tag amber">Needs blob storage</span>
+                <span>Add BLOB_READ_WRITE_TOKEN before accepting uploaded resume files.</span>
+              </div>
+            </article>
+          </div>
         </section>
 
         <section className="section">
@@ -180,8 +215,8 @@ export default function SettingsPage() {
 
         <section className="section">
           <SectionTitle
-            title="Selected Database Path"
-            text="This is the recommended provider route for the first production deployment."
+            title="Database Provider"
+            text="The deployed app uses Neon Postgres through Vercel for user-scoped profile, tracker, leads, memory, and daily-task data."
           />
           <div className="settingsLayout">
             <div className="panel">
@@ -215,8 +250,8 @@ export default function SettingsPage() {
             </div>
             <div className="panel">
               <div className="panelHeader">
-                <strong>Wiring steps</strong>
-                <span className="statusPill">Next</span>
+                <strong>Operational steps</strong>
+                <span className="statusPill">Reference</span>
               </div>
               <ol className="migrationList">
                 {status.database.provider.nextSteps.map((step) => (
@@ -230,7 +265,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Storage Adapter"
-            text="The app can run local for the pilot or Postgres for core profile, tracker, leads, daily tasks, and assistant memory data."
+            text="Core product data is wired through repository boundaries. Production uses user-scoped Postgres storage."
           />
           <div className="settingsLayout">
             <div className="panel">
@@ -354,7 +389,7 @@ export default function SettingsPage() {
         <section className="section">
           <SectionTitle
             title="Production Data Model"
-            text="The first Postgres schema for turning the local pilot into a real account-based product."
+            text="The current Postgres schema for account-based career operations data."
           />
           <div className="schemaGrid">
             {databaseTables.map((table) => (
@@ -374,7 +409,7 @@ export default function SettingsPage() {
           <div className="panel">
             <div className="panelHeader">
               <strong>Migration order</strong>
-              <span className="statusPill">Database next</span>
+              <span className="statusPill">Schema reference</span>
             </div>
             <ol className="migrationList">
               {migrationSteps.map((step) => (
@@ -412,12 +447,12 @@ export default function SettingsPage() {
             <Feature
               icon={<Database size={20} />}
               title="Database"
-              text="Move tracker, leads, profile, memory, and daily action state from files into user-scoped tables."
+              text="Profile, tracker, leads, memory, and daily actions are stored in user-scoped tables."
             />
             <Feature
               icon={<Globe2 size={20} />}
               title="Domain"
-              text="Point app.vyomaai.in to Vercel and keep the Wix site as the public marketing surface if needed."
+              text="The app is deployed on Vercel and available through the vyomaai.in domain aliases."
             />
           </div>
         </section>

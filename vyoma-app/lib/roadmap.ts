@@ -15,20 +15,20 @@ export const roadmap: RoadmapItem[] = [
   {
     area: "Account",
     status: "done",
-    title: "Login boundary",
-    detail: "First-party signed sessions protect app routes and APIs, and signed-in emails map to user-owned profile data.",
+    title: "Clerk authentication",
+    detail: "Clerk handles sign-in, sign-up, session UI, route protection, and identity mapping into user-owned profile data.",
   },
   {
     area: "Profile",
     status: "done",
     title: "Career Ops profile setup",
-    detail: "Captures profile summary, relocation context, work authorization, role targets, markets, skills, memory, and resume variants.",
+    detail: "Captures profile summary, work preferences, role targets, markets, skills, memory, and resume/CV versions.",
   },
   {
     area: "Profile",
     status: "in_progress",
     title: "Agent-assisted profile edits",
-    detail: "Local profile agent can reshape the draft for Singapore, sponsorship, KYC, transaction monitoring, remote APAC, and stronger positioning.",
+    detail: "Profile agent can reshape the draft for stronger role positioning, location preferences, and clearer profile language.",
   },
   {
     area: "Dashboard",
@@ -40,7 +40,7 @@ export const roadmap: RoadmapItem[] = [
     area: "Daily Plan",
     status: "done",
     title: "Search rhythm",
-    detail: "Provides daily LinkedIn search paths for Malaysia, Singapore, recruiters, and remote APAC.",
+    detail: "Provides a checkable daily workflow for follow-ups, lead review, resume choice, search, and outreach.",
   },
   {
     area: "Leads",
@@ -80,26 +80,26 @@ export const roadmap: RoadmapItem[] = [
   },
   {
     area: "AI",
-    status: "in_progress",
+    status: "done",
     title: "OpenAI assistant integration",
-    detail: "Replace local rules with a real assistant that can parse resumes, refine profile, evaluate roles, and draft messages.",
+    detail: "OpenAI-backed assistant is connected for profile-aware guidance, with local fallback still available.",
   },
   {
-    area: "Account",
+    area: "Resume",
     status: "next",
-    title: "Upgrade managed auth",
-    detail: "Replace first-party sessions with Clerk or Auth.js for verified email ownership, social login, and account management.",
+    title: "Direct resume file upload",
+    detail: "Resume names, links, and usage notes are saved now. Next step is blob storage for direct file uploads and parsing.",
   },
   {
     area: "Integrations",
     status: "in_progress",
     title: "Official OAuth integrations",
-    detail: "Repository boundary exists for official OAuth metadata. Next step is encrypted token storage and provider flow.",
+    detail: "Encrypted token storage exists. Provider OAuth flows need approved app credentials and scopes.",
   },
   {
     area: "Deployment",
     status: "done",
-    title: "Vercel and app.vyomaai.in",
+    title: "Vercel and vyomaai.in",
     detail: "Production is deployed to Vercel with vyomaai.in aliases, Neon Postgres, protected routes, and core environment variables.",
   },
 ];

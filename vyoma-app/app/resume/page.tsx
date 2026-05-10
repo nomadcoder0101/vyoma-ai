@@ -1,4 +1,5 @@
-import { FileCheck2, FileText, Sparkles, Upload } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, FileCheck2, FileText, Link2, Sparkles, Upload } from "lucide-react";
 import { loadProfileAsync } from "../../lib/profile";
 import { Footer, MetricCard, SectionTitle, Topbar } from "../components";
 import { ResumeAnalyzer } from "./resume-analyzer";
@@ -18,8 +19,8 @@ export default async function ResumeStudioPage() {
           <div className="metricGrid dashboardMetrics">
             <MetricCard value={profile.resumeTemplates.length} label="Resume versions mapped" />
             <MetricCard value={profile.targetRoles.length} label="Target role families" />
-            <MetricCard value="4" label="Core recommendation tracks" />
-            <MetricCard value="Local" label="Recommendation mode" />
+            <MetricCard value="Profile" label="Source of truth" />
+            <MetricCard value="Rules" label="Recommendation mode" />
           </div>
         </section>
 
@@ -41,6 +42,9 @@ export default async function ResumeStudioPage() {
                 </article>
               ))}
             </div>
+            <Link className="button secondary cardButton" href="/onboarding">
+              Manage resume versions <ArrowRight size={16} />
+            </Link>
           </div>
 
           <ResumeAnalyzer />
@@ -53,7 +57,7 @@ export default async function ResumeStudioPage() {
                 <FileCheck2 size={20} />
               </span>
               <h3>Role-family matching</h3>
-              <p>Match KYC, TM, SAR/STR, and broad FCC roles to the best resume version.</p>
+              <p>Match any pasted role or job description to the strongest saved resume version.</p>
             </article>
             <article className="card">
               <span className="cardIcon">
@@ -64,10 +68,17 @@ export default async function ResumeStudioPage() {
             </article>
             <article className="card">
               <span className="cardIcon">
+                <Link2 size={20} />
+              </span>
+              <h3>Links work now</h3>
+              <p>Paste cloud links or original file names into the profile resume notes field.</p>
+            </article>
+            <article className="card">
+              <span className="cardIcon">
                 <Upload size={20} />
               </span>
-              <h3>Upload later</h3>
-              <p>Production can add secure resume upload, parsing, and generated tailored versions.</p>
+              <h3>Direct upload next</h3>
+              <p>Direct file upload will be enabled after blob storage is connected.</p>
             </article>
           </div>
         </section>

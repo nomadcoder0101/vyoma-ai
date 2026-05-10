@@ -70,11 +70,20 @@ export const storageCapabilities: StorageCapability[] = [
   {
     area: "Integrations",
     local: false,
-    postgres: false,
+    postgres: true,
     repository: true,
     localSource: "none",
     postgresTarget: "integration_accounts",
-    detail: "Integrations now use a repository boundary. Local token storage is disabled; encrypted Postgres storage comes later.",
+    detail: "Integrations use encrypted Postgres token storage. Provider OAuth flows still need approved app credentials.",
+  },
+  {
+    area: "Resume files",
+    local: false,
+    postgres: false,
+    repository: false,
+    localSource: "manual file references only",
+    postgresTarget: "resume_variants.file_url plus blob storage",
+    detail: "Resume metadata and cloud links are saved with the profile. Direct binary upload needs blob storage.",
   },
 ];
 

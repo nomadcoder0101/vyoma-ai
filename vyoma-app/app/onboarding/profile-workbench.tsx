@@ -322,8 +322,8 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
         <div className="agentSuggestion">
           <Sparkles size={18} />
           <span>
-            This is a local rules-based agent for the pilot. Later we connect it to
-            your ChatGPT/OpenAI assistant for richer conversational edits.
+            This profile editor applies focused changes to the draft. Use the
+            Assistant page for richer OpenAI-backed strategy and wording help.
           </span>
         </div>
       </aside>
