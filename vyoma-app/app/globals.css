@@ -1055,6 +1055,26 @@ h1 {
   text-transform: uppercase;
 }
 
+.resumeUploadControl {
+  align-items: center;
+  background: #fff;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--teal);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.resumeUploadControl input {
+  display: none;
+}
+
 .profilePreview {
   position: sticky;
   top: 82px;

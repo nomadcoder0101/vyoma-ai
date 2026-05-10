@@ -36,6 +36,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
 CLERK_SECRET_KEY=...
 VYOMA_STORAGE_MODE=postgres
 INTEGRATION_ENCRYPTION_KEY=...
+BLOB_READ_WRITE_TOKEN=...
 ```
 
 For Postgres, use Neon through the Vercel Marketplace:
@@ -62,7 +63,8 @@ Live aliases:
 
 ## Remaining Production Work
 
-- Add secure resume upload/storage.
+- Add `BLOB_READ_WRITE_TOKEN` in Vercel and local `.env.local` to activate direct resume uploads.
+- Add resume parsing after uploads are active.
 - Add official LinkedIn OAuth credentials and approved scopes.
 - Add official OAuth integrations where available.
 - Keep LinkedIn password collection out of scope.

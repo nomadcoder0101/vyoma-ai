@@ -15,11 +15,13 @@ Vyoma AI should act as a real-time job search copilot. It should help a user bui
 7. Confirmed profile powers a personalized dashboard, daily plan, lead queue, tracker, recommendations, and outreach drafts.
 8. The portal keeps profile memory: what was applied to, what worked, what was ignored, what needs improvement, and what the user should do next.
 
-## Pilot Scope
+## Current Scope
 
-The first pilot is one profile: Samruddhi Chougule, AML/KYC and Financial Crime Compliance, based in Kuala Lumpur, targeting Malaysia, Singapore, and remote APAC roles.
+The product is designed as a general job-search workspace for any role, industry, location preference, career change, relocation, or remote search.
 
-For the pilot, authentication is represented as a local app step. Production authentication should be added before public release.
+The first seeded profile is Samruddhi Chougule, AML/KYC and Financial Crime Compliance, based in Kuala Lumpur, targeting Malaysia, Singapore, and remote APAC roles. That profile-specific context should stay inside signed-in app areas and assistant memory, not on the generic public landing page.
+
+Production authentication is active through Clerk. User-scoped data is stored in Postgres when `VYOMA_STORAGE_MODE=postgres`.
 
 ## Data Needed Per Profile
 
@@ -59,7 +61,7 @@ For the pilot, authentication is represented as a local app step. Production aut
 ### Phase 1: Pilot Portal
 
 - Landing page
-- Local login placeholder
+- Managed login and signup
 - Profile onboarding and confirmation
 - Personalized dashboard
 - Tracker, daily plan, lead queue
@@ -67,9 +69,9 @@ For the pilot, authentication is represented as a local app step. Production aut
 
 ### Phase 2: Real App Foundation
 
-- Production auth
+- Production auth through Clerk
 - Database storage per user/profile
-- Resume upload and parsing
+- Resume upload through blob storage, then parsing
 - OpenAI assistant/API integration
 - LinkedIn official OAuth where supported
 - Deployment on Vercel under app.vyomaai.in

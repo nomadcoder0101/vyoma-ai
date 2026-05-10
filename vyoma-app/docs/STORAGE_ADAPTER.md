@@ -1,8 +1,8 @@
 # Vyoma Storage Adapter Boundary
 
-The app currently runs on local files. The production target is Postgres.
+The app can run on local files for development or Postgres for production.
 
-This boundary exists so local pilot data and Postgres production data can share repository contracts.
+This boundary exists so local pilot data and production data can share repository contracts.
 
 ## Current Runtime
 
@@ -21,7 +21,7 @@ Local mode uses:
 - `../data/tracker-actions.json`
 - `../data/daily-actions.json`
 
-## Future Runtime
+## Production Runtime
 
 Set by:
 
@@ -30,7 +30,7 @@ VYOMA_STORAGE_MODE=postgres
 DATABASE_URL=...
 ```
 
-Profile, tracker, leads, assistant memory, and daily tasks have Postgres repository implementations; integrations are still blocked until encrypted OAuth token storage is implemented. The SQL migrations live under `migrations/`.
+Profile, tracker, leads, assistant memory, daily tasks, and encrypted integration token storage have Postgres repository implementations. Provider OAuth flows still need approved app credentials and scopes before they can be enabled. The SQL migrations live under `migrations/`.
 
 `lib/database.ts` is the shared database readiness boundary. It checks `DATABASE_URL`, exposes the Neon query helper, and gives unconverted repositories one consistent blocked-path error.
 
@@ -53,7 +53,7 @@ See `docs/DATABASE_PROVIDER.md` for the selected Neon through Vercel Marketplace
 2. Add Postgres repository functions beside each local implementation.
 3. Route through `VYOMA_STORAGE_MODE`.
 4. Run local and Postgres parity checks.
-5. Keep integrations blocked until encrypted OAuth token storage passes review.
+5. Keep provider OAuth flows blocked until app credentials, scopes, and redirect URLs pass review.
 
 ## Database Boundary
 
@@ -73,8 +73,9 @@ See `docs/DATABASE_PROVIDER.md` for the selected Neon through Vercel Marketplace
 | Leads | `leads.json`, `applications.md` | `leads`, `applications` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
 | Assistant memory | `assistant-memory.json` | `assistant_messages`, `memories` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
 | Daily tasks | `daily-actions.json` | `daily_tasks` | Local and Postgres implementations exist; runtime follows `VYOMA_STORAGE_MODE` |
-| Integrations | none | `integration_accounts` | Repository boundary added; local token storage disabled; Postgres intentionally blocked |
+| Integrations | none | `integration_accounts` | Encrypted Postgres storage exists; provider OAuth flows need approved app credentials |
+| Resume files | none | `resume_variants.file_url` plus blob storage | Upload endpoint exists; activation requires `BLOB_READ_WRITE_TOKEN` |
 
 ## Safety Rule
 
-Do not enable credential-bearing integrations until encrypted OAuth storage is implemented and verified. The core career operations runtime can now be tested in `VYOMA_STORAGE_MODE=postgres`.
+Do not collect provider passwords or enable unofficial scraping. Credential-bearing integrations must use official OAuth, encrypted token storage, and approved scopes. The core career operations runtime can now be tested in `VYOMA_STORAGE_MODE=postgres`.

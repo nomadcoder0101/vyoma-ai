@@ -1,38 +1,31 @@
-# Vyoma AI Pending Items
+# Vyoma AI Remaining Items
 
-This list reflects the current live app state after Postgres storage, Clerk auth wiring, route protection, and Vercel deployment.
+Current baseline: Vercel deployment, Clerk auth, Neon Postgres, OpenAI assistant mode, user-scoped profile/tracker/leads/daily tasks/memory, resume metadata, and code-level resume upload support are in place.
 
-## Completed In This Pass
+## Fixed Now
 
-- Added this pending-items backlog so product gaps are tracked in one place.
-- Updated stale authentication, deployment, storage, and roadmap documentation.
-- Updated in-app roadmap/status wording to match the deployed app.
-- Added encrypted Postgres storage support for OAuth integration tokens.
-- Added `npm.cmd run smoke:live` for production auth/route smoke checks.
-- Wired Clerk into the App Router shell, login page, route middleware, and local auth identity adapter.
-- Kept credential-bearing LinkedIn access out of scope until official OAuth and encryption are implemented.
+- Direct resume upload endpoint added at `/api/resume/upload`.
+- Profile Setup can upload PDF/DOC/DOCX files, store returned file URLs, and show attached file links.
+- Resume Studio shows attached file links.
+- Resume upload is limited to PDF/DOC/DOCX and 5 MB per file.
+- Settings and roadmap now reflect current auth, AI, database, integration, and resume states.
 
-## Remaining Product Items
+## Remaining Items
 
 | Priority | Item | Status | Blocker / Requirement |
 | --- | --- | --- | --- |
-| P0 | Managed authentication provider | In progress | Clerk is wired in code. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` locally and in Vercel. |
-| P0 | Encrypted OAuth token storage | Done | AES-GCM encrypted Postgres token storage is implemented; set `INTEGRATION_ENCRYPTION_KEY` separately before storing real provider tokens. |
-| P0 | Official LinkedIn OAuth | Blocked | Needs LinkedIn app credentials and approved OAuth scopes. Do not ask for LinkedIn passwords. |
-| P1 | Resume/document upload storage | Pending | Needs storage provider, file size limits, virus/privacy policy, and user-scoped access rules. |
-| P1 | OpenAI production assistant key | Done | `OPENAI_API_KEY` is configured and the live assistant reports OpenAI mode. |
-| P1 | Multi-profile account model | Pending | Current app maps one active career profile per signed-in account. |
-| P1 | Admin/user management UI | Pending | Best handled after managed auth provider is chosen. |
-| P2 | Preview environment storage mode | Pending | Vercel preview variables are branch-scoped; production and development are configured. |
-| P2 | Production smoke test | In progress | `npm.cmd run smoke:live` checks public pages and anonymous route blocking. Signed-in API smoke should be re-added through Clerk test auth after Clerk keys are configured. |
-| P2 | End-to-end browser test suite | Pending | Add Playwright flows for tracker actions, lead conversion, daily completion, and assistant memory. |
-| P2 | GitHub/Vercel source alignment | Done | Deployed code is committed and pushed so production is reproducible from the repository. |
+| P0 | Resume blob storage token | Environment gated | Add `BLOB_READ_WRITE_TOKEN` in Vercel and local `.env.local` to activate direct file uploads. |
+| P0 | Official LinkedIn OAuth | External blocker | Needs LinkedIn app credentials and approved scopes. Do not ask for LinkedIn passwords. |
+| P1 | Signed-in smoke test | Pending | Needs Clerk test-session strategy or test user automation that does not expose credentials. |
+| P1 | Resume parsing | Pending | After upload works, parse PDF/DOCX into structured profile/resume signals. |
+| P1 | Multi-profile accounts | Pending | Current app supports one active career profile per signed-in user. |
+| P1 | Admin/user management | Pending | Needs product decision on whether Vyoma is single-user, family/team, or public SaaS. |
+| P2 | Browser E2E suite | Pending | Add Playwright flows for onboarding, lead conversion, daily task completion, and assistant memory. |
+| P2 | Preview environment policy | Pending | Decide whether Vercel preview should use isolated DB/storage or production-like data. |
 
-## Current Production Baseline
+## Intentionally Out Of Scope
 
-- Domain: `https://vyoma-ai.vercel.app`, `https://vyomaai.in`, `https://www.vyomaai.in`
-- Storage: Neon Postgres via `VYOMA_STORAGE_MODE=postgres`
-- Protected areas: dashboard, onboarding, tracker, daily plan, leads, resume, assistant, memory, settings, and APIs
-- Public areas: landing page, login page, roadmap
-- Database-backed areas: profile, tracker, leads, daily tasks, assistant memory
-- Intentionally blocked: LinkedIn credential collection, unofficial scraping, and unapproved OAuth scopes
+- LinkedIn password collection
+- Unofficial LinkedIn scraping
+- Storing raw OAuth tokens without encryption
+- Claiming the app applied to jobs or sent messages unless the user did it

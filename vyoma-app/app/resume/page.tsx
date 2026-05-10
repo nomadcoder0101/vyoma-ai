@@ -39,6 +39,11 @@ export default async function ResumeStudioPage() {
                   <h3>{template.name}</h3>
                   <strong>{template.focus}</strong>
                   <p>{template.notes}</p>
+                  {template.fileUrl ? (
+                    <a className="inlineLink cardButton" href={template.fileUrl} target="_blank" rel="noreferrer">
+                      Open attached file <ArrowRight size={14} />
+                    </a>
+                  ) : null}
                 </article>
               ))}
             </div>

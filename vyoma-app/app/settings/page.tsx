@@ -169,8 +169,12 @@ export default function SettingsPage() {
               <ServerCog size={18} />
               <div>
                 <strong>Direct file upload</strong>
-                <span className="tag amber">Needs blob storage</span>
-                <span>Add BLOB_READ_WRITE_TOKEN before accepting uploaded resume files.</span>
+                <span className={`tag ${process.env.BLOB_READ_WRITE_TOKEN ? "teal" : "amber"}`}>
+                  {process.env.BLOB_READ_WRITE_TOKEN ? "Ready" : "Needs blob storage"}
+                </span>
+                <span>
+                  Upload endpoint is implemented. Add BLOB_READ_WRITE_TOKEN before accepting uploaded resume files.
+                </span>
               </div>
             </article>
           </div>

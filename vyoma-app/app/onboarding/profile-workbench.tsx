@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BadgeCheck, BrainCircuit, FileText, Plus, Send, Save, Sparkles } from "lucide-react";
+import { BadgeCheck, BrainCircuit, ExternalLink, FileText, Plus, Send, Save, Sparkles, Upload } from "lucide-react";
 import type { CareerProfile } from "../../lib/profile";
 
 export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerProfile }) {
@@ -25,7 +25,7 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
     );
   }
 
-  function updateResume(index: number, key: "name" | "focus" | "notes", value: string) {
+  function updateResume(index: number, key: "name" | "focus" | "notes" | "fileUrl", value: string) {
     setProfile((current) => ({
       ...current,
       confirmed: false,
@@ -33,6 +33,48 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
         templateIndex === index ? { ...template, [key]: value } : template,
       ),
     }));
+  }
+
+  async function uploadResume(index: number, file: File | null) {
+    if (!file) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/resume/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const body = (await response.json()) as { fileName?: string; fileUrl?: string; error?: string };
+      if (!response.ok || !body.fileUrl) {
+        setMessage(body.error || "Could not upload resume.");
+        return;
+      }
+      const uploadedUrl = body.fileUrl;
+      const uploadedName = body.fileName;
+      setProfile((current) => ({
+        ...current,
+        confirmed: false,
+        resumeTemplates: current.resumeTemplates.map((template, templateIndex) =>
+          templateIndex === index
+            ? {
+                ...template,
+                name: template.name.startsWith("New resume") ? uploadedName || template.name : template.name,
+                fileUrl: uploadedUrl,
+                notes: template.notes.includes(uploadedUrl)
+                  ? template.notes
+                  : `${template.notes}\nUploaded file: ${uploadedUrl}`.trim(),
+              }
+            : template,
+        ),
+      }));
+      setMessage("Resume uploaded. Save the profile to keep this file attached.");
+    } catch {
+      setMessage("Could not reach the resume upload service.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function addResumeTemplate() {
@@ -219,8 +261,9 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
             <div>
               <h2>Attached resumes / CV versions</h2>
               <p>
-                Add each resume version you want the assistant to consider. For now,
-                store the file name, cloud link, and usage notes here.
+                Add each resume version you want the assistant to consider. Upload a
+                PDF/DOC/DOCX when blob storage is configured, or paste a cloud link
+                and usage notes.
               </p>
             </div>
             <button className="button secondary" onClick={addResumeTemplate} type="button">
@@ -237,6 +280,11 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                   <strong>{template.name}</strong>
                   <span>{template.focus}</span>
                   <p>{template.notes}</p>
+                  {template.fileUrl ? (
+                    <a className="inlineLink" href={template.fileUrl} target="_blank" rel="noreferrer">
+                      Open attached file <ExternalLink size={14} />
+                    </a>
+                  ) : null}
                 </div>
               </article>
             ))}
@@ -263,6 +311,21 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                 value={template.notes}
                 onChange={(event) => updateResume(index, "notes", event.target.value)}
               />
+              <input
+                aria-label="Attached resume file URL"
+                placeholder="Attached file URL"
+                value={template.fileUrl || ""}
+                onChange={(event) => updateResume(index, "fileUrl", event.target.value)}
+              />
+              <label className="resumeUploadControl">
+                <Upload size={16} /> Upload PDF/DOC/DOCX
+                <input
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  disabled={busy}
+                  type="file"
+                  onChange={(event) => uploadResume(index, event.target.files?.[0] || null)}
+                />
+              </label>
             </div>
           ))}
         </div>

@@ -42,7 +42,7 @@ export const selectedDatabaseProvider: DatabaseProviderPlan = {
     "Create a Neon database from the Vercel Marketplace.",
     "Run npm.cmd run db:migrate.",
     "Set DATABASE_URL or the injected Neon Postgres variables.",
-    "Keep official OAuth provider credentials and resume blob storage as the remaining production hardening slices.",
+    "Add official OAuth provider credentials and BLOB_READ_WRITE_TOKEN when those integrations are ready to activate.",
   ],
 };
 

@@ -24,7 +24,7 @@ npm.cmd run db:migrate
 
 - Vercel Postgres, Neon, Supabase, and Railway Postgres can all run this schema.
 - Supabase projects usually already include useful auth tables. If using Supabase Auth, keep Vyoma's `users` table as an app-level profile/ownership table mapped to Supabase auth identities.
-- OAuth token columns are present for future integrations, but tokens must be encrypted before storage.
+- OAuth token columns are reserved for official integrations and must be written only through the encrypted integration repository.
 
 ## Current App Mode
 

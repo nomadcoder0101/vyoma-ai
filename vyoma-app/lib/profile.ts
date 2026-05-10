@@ -8,6 +8,7 @@ export type ResumeTemplate = {
   name: string;
   focus: string;
   notes: string;
+  fileUrl?: string;
 };
 
 export type CareerProfile = {
@@ -417,6 +418,7 @@ type ResumeVariantRow = {
   name: string;
   focus: string;
   notes: string;
+  file_url: string | null;
 };
 
 const blockedSyncPostgresProfileRepository: ProfileRepository = {
@@ -491,7 +493,7 @@ async function loadPostgresProfile(): Promise<CareerProfile> {
   }
 
   const resumeRows = (await sql.query(
-    "select name, focus, notes from resume_variants where profile_id = (select id from profiles where user_id = $1 and external_id = $2 limit 1) order by created_at asc",
+    "select name, focus, notes, file_url from resume_variants where profile_id = (select id from profiles where user_id = $1 and external_id = $2 limit 1) order by created_at asc",
     [userId, defaultProfile.id],
   )) as ResumeVariantRow[];
 
@@ -508,7 +510,14 @@ async function loadPostgresProfile(): Promise<CareerProfile> {
     profileDescription: rows[0].profile_description,
     reasonForChange: rows[0].reason_for_change,
     constraints: rows[0].constraints,
-    resumeTemplates: resumeRows.length ? resumeRows : defaultProfile.resumeTemplates,
+    resumeTemplates: resumeRows.length
+      ? resumeRows.map((row) => ({
+          name: row.name,
+          focus: row.focus,
+          notes: row.notes,
+          fileUrl: row.file_url || undefined,
+        }))
+      : defaultProfile.resumeTemplates,
     confirmed: Boolean(rows[0].confirmed_at),
     memory: rows[0].memory,
     agentNotes: rows[0].agent_notes,
@@ -557,8 +566,8 @@ async function savePostgresProfile(profile: CareerProfile): Promise<CareerProfil
   await sql.query("delete from resume_variants where profile_id = $1", [profileId]);
   for (const template of nextProfile.resumeTemplates) {
     await sql.query(
-      "insert into resume_variants (profile_id, name, focus, notes) values ($1, $2, $3, $4)",
-      [profileId, template.name, template.focus, template.notes],
+      "insert into resume_variants (profile_id, name, focus, notes, file_url) values ($1, $2, $3, $4, $5)",
+      [profileId, template.name, template.focus, template.notes, template.fileUrl || null],
     );
   }
 

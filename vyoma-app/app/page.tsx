@@ -45,7 +45,7 @@ const appAreas = [
     href: "/daily-plan",
     icon: <CalendarCheck2 size={20} />,
     title: "Daily Plan",
-    text: "A short list of today’s actions so the search feels manageable.",
+    text: "A short list of today's actions so the search feels manageable.",
   },
   {
     href: "/leads",
@@ -153,7 +153,7 @@ export default function Home() {
             <Feature
               icon={<ShieldCheck size={20} />}
               title="Private workspace"
-              text="Authentication and database storage keep each user’s career data scoped to their own account."
+              text="Authentication and database storage keep each user's career data scoped to their own account."
             />
             <Feature
               icon={<BrainCircuit size={20} />}
