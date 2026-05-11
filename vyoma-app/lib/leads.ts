@@ -409,8 +409,8 @@ type LeadRow = {
   next_action: string | null;
   outreach_draft: string | null;
   resume_recommendation: ResumeRecommendation | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | Date;
+  updated_at: string | Date;
 };
 
 const postgresLeadRepository: AsyncLeadRepository = {
@@ -565,9 +565,13 @@ function rowToLead(row: LeadRow): Lead {
     nextAction: row.next_action || undefined,
     outreachDraft: row.outreach_draft || undefined,
     resumeRecommendation: row.resume_recommendation || undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: serializeTimestamp(row.created_at),
+    updatedAt: serializeTimestamp(row.updated_at),
   };
+}
+
+function serializeTimestamp(value: string | Date) {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 function classifyLeadRoleBucket(lead: Lead) {
