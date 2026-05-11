@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "db:migrate": "node scripts/migrate-database.mjs",
+    "seed:demo": "node scripts/seed-demo-profile.mjs",
     "smoke:live": "node scripts/smoke-live.mjs",
     "test:e2e": "playwright test",
     "test:cleanup": "node scripts/cleanup-test-data.mjs"
