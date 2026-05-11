@@ -23,10 +23,12 @@ export function DailyCommandBoard({ initialCommand }: { initialCommand: DailyCom
     setCommand(body.command);
   }
 
+  const nextAction = command.actions.find((action) => !action.done) || command.actions[0];
+
   return (
-    <div className="panel">
+    <div className="dailyBoard">
       <div className="panelHeader">
-        <strong>Today&apos;s command center</strong>
+        <strong>Today&apos;s next steps</strong>
         <span className="statusPill">
           {completed}/{command.actions.length} done
         </span>
@@ -34,8 +36,18 @@ export function DailyCommandBoard({ initialCommand }: { initialCommand: DailyCom
       <div className="dailyProgress">
         <span style={{ width: `${command.actions.length ? (completed / command.actions.length) * 100 : 0}%` }} />
       </div>
+      {nextAction ? (
+        <div className="todayFocus">
+          <span>Start here</span>
+          <strong>{nextAction.title}</strong>
+          <p>{nextAction.detail}</p>
+          <Link className="button primary" href={nextAction.href}>
+            Open workspace <ExternalLink size={14} />
+          </Link>
+        </div>
+      ) : null}
       <div className="dailyActionList">
-        {command.actions.map((action) => (
+        {command.actions.map((action, index) => (
           <article className={`dailyAction ${action.done ? "done" : ""}`} key={action.id}>
             <button
               aria-label={action.done ? "Mark not done" : "Mark done"}
@@ -48,6 +60,7 @@ export function DailyCommandBoard({ initialCommand }: { initialCommand: DailyCom
             </button>
             <div>
               <div className="dailyActionTop">
+                <span className="dailyStepNumber">{index + 1}</span>
                 <strong>{action.title}</strong>
                 <span className={`tag ${action.priority === "high" ? "red" : action.priority === "medium" ? "amber" : "teal"}`}>
                   {action.priority}

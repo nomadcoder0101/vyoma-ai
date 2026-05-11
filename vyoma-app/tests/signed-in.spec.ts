@@ -27,7 +27,7 @@ test("signed-in user can reach core app areas", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /resume studio/i })).toBeVisible();
 
   await page.goto("/leads");
-  await expect(page.getByRole("heading", { name: /lead intake/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /lead workspace/i })).toBeVisible();
 
   await page.goto("/tracker");
   await expect(page.getByRole("heading", { name: /application tracker/i })).toBeVisible();

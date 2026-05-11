@@ -1,13 +1,30 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BadgeCheck, BrainCircuit, Download, ExternalLink, FileText, Plus, Send, Save, Sparkles, Upload } from "lucide-react";
+import { BadgeCheck, BrainCircuit, Download, ExternalLink, FileText, Info, Plus, Send, Save, Sparkles, Upload } from "lucide-react";
 import type { CareerProfile } from "../../lib/profile";
 
-export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerProfile }) {
+type ProfileChatMessage = {
+  role: "assistant" | "user";
+  text: string;
+};
+
+export function ProfileWorkbench({
+  confirmedNotice = false,
+  initialProfile,
+}: {
+  confirmedNotice?: boolean;
+  initialProfile: CareerProfile;
+}) {
   const [profile, setProfile] = useState(initialProfile);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(confirmedNotice ? "Profile confirmed and saved." : "");
   const [agentInstruction, setAgentInstruction] = useState("");
+  const [profileChat, setProfileChat] = useState<ProfileChatMessage[]>([
+    {
+      role: "assistant",
+      text: "I can help tune this profile. Ask me to sharpen a headline, soften authorization wording, or adapt the profile for a role.",
+    },
+  ]);
   const [busy, setBusy] = useState(false);
   const preview = useMemo(() => buildPreview(profile), [profile]);
 
@@ -130,24 +147,38 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
 
   async function runAgentEdit() {
     if (!agentInstruction.trim()) return;
+    const instruction = agentInstruction.trim();
+    setProfileChat((current) => [...current, { role: "user", text: instruction }]);
     setBusy(true);
     setMessage("");
     try {
       const response = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "agent_edit", instruction: agentInstruction }),
+        body: JSON.stringify({ action: "agent_edit", instruction }),
       });
       if (!response.ok) {
         setMessage("Agent could not update the profile.");
+        setProfileChat((current) => [
+          ...current,
+          { role: "assistant", text: "I could not update the draft. Please try again with a shorter instruction." },
+        ]);
         return;
       }
       const body = (await response.json()) as { profile: CareerProfile };
       setProfile(body.profile);
       setAgentInstruction("");
       setMessage("Agent updated the profile draft. Review and confirm when ready.");
+      setProfileChat((current) => [
+        ...current,
+        { role: "assistant", text: "I updated the draft and marked it for review. Check the profile preview and confirm when it feels right." },
+      ]);
     } catch {
       setMessage("Could not reach the profile agent.");
+      setProfileChat((current) => [
+        ...current,
+        { role: "assistant", text: "I could not reach the profile agent service. The draft is unchanged." },
+      ]);
     } finally {
       setBusy(false);
     }
@@ -156,8 +187,8 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
   return (
     <div className="profileWorkbench">
       <div className="panel profileFormPanel">
-        <div className="panelHeader">
-          <strong>Profile inputs</strong>
+        <div className="panelHeader warmHeader">
+          <strong>Profile workspace</strong>
           <span className="statusPill">{profile.confirmed ? "Confirmed" : "Draft"}</span>
         </div>
         <div className="confirmStrip">
@@ -168,13 +199,11 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
               lead scoring, and outreach drafts.
             </span>
           </div>
-          <form action="/api/profile/confirm" method="post">
-            <input name="profile" type="hidden" value={JSON.stringify(profile)} />
-            <button className="button primary" type="submit">
-              <BadgeCheck size={16} /> Confirm profile
-            </button>
-          </form>
+          <button className="button primary" disabled={busy} onClick={() => saveProfile(true)} type="button">
+            <BadgeCheck size={16} /> Confirm profile
+          </button>
         </div>
+        {message ? <div className="inlineNotice profileSaveNotice">{message}</div> : null}
 
         <div className="profileForm">
           <label>
@@ -261,8 +290,13 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
               onChange={(event) => updateList("constraints", event.target.value)}
             />
           </label>
-          <label className="wide">
-            Agent memory
+          <label className="wide memoryLabel">
+            <span>
+              Agent memory
+              <span className="infoHint" title="Memory is the durable context the assistant uses: preferences, risks, lessons from applications, and reminders that should shape future recommendations.">
+                <Info size={14} />
+              </span>
+            </span>
             <textarea
               rows={5}
               value={profile.memory.join("\n")}
@@ -285,44 +319,41 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
               <Plus size={16} /> Add resume
             </button>
           </div>
-          <div className="resumeAttachmentGrid">
-            {profile.resumeTemplates.map((template, index) => (
-              <article className="resumeAttachment" key={`${template.name}-summary-${index}`}>
+          {profile.resumeTemplates.map((template, index) => (
+            <div className="resumeRow" key={`${template.name}-${index}`}>
+              <div className="resumeCardHeader">
                 <span className="cardIcon">
                   <FileText size={20} />
                 </span>
                 <div>
-                  <strong>{template.name}</strong>
-                  <span>{template.focus}</span>
-                  <p>{template.notes}</p>
-                  {template.fileUrl ? (
-                    <a className="inlineLink" href={`/api/resume/download?index=${index}`}>
-                      Download attached file <Download size={14} />
+                  <span className="resumeRowLabel">Resume {index + 1}</span>
+                  <strong>{template.name || "Untitled resume"}</strong>
+                  <p>{template.focus}</p>
+                </div>
+                <div className="resumeQuickActions">
+                  {template.fullText || template.fileUrl ? (
+                    <a className="button secondary" href={`/api/resume/download?index=${index}`}>
+                      <Download size={14} /> Download
                     </a>
                   ) : null}
                   {template.fileUrl ? (
-                    <a className="inlineLink" href={template.fileUrl} target="_blank" rel="noreferrer">
-                      Open attached file <ExternalLink size={14} />
+                    <a className="iconOnly" href={template.fileUrl} target="_blank" rel="noreferrer" aria-label="Open attached file">
+                      <ExternalLink size={16} />
                     </a>
-                  ) : null}
-                  {template.parsedSummary ? (
-                    <div className="resumeParseSummary">
-                      <span className={`tag ${template.parsedSummary.status === "parsed" ? "teal" : "amber"}`}>
-                        {template.parsedSummary.status || "pending"}
-                      </span>
-                      <span>{template.parsedSummary.wordCount || 0} words parsed</span>
-                      {template.parsedSummary.roleSignals?.length ? (
-                        <span>{template.parsedSummary.roleSignals.join(", ")}</span>
-                      ) : null}
-                    </div>
                   ) : null}
                 </div>
-              </article>
-            ))}
-          </div>
-          {profile.resumeTemplates.map((template, index) => (
-            <div className="resumeRow" key={`${template.name}-${index}`}>
-              <span className="resumeRowLabel">Resume {index + 1}</span>
+              </div>
+              {template.parsedSummary ? (
+                <div className="resumeParseSummary">
+                  <span className={`tag ${template.parsedSummary.status === "parsed" ? "teal" : "amber"}`}>
+                    {template.parsedSummary.status || "pending"}
+                  </span>
+                  <span>{template.parsedSummary.wordCount || 0} words parsed</span>
+                  {template.parsedSummary.roleSignals?.slice(0, 3).map((signal) => (
+                    <span key={signal}>{signal}</span>
+                  ))}
+                </div>
+              ) : null}
               <input
                 aria-label="Resume file name or version"
                 placeholder="File name or version label"
@@ -355,15 +386,17 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
                 value={template.fileUrl || ""}
                 onChange={(event) => updateResume(index, "fileUrl", event.target.value)}
               />
-              <label className="resumeUploadControl">
-                <Upload size={16} /> Upload PDF/DOC/DOCX
-                <input
-                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  disabled={busy}
-                  type="file"
-                  onChange={(event) => uploadResume(index, event.target.files?.[0] || null)}
-                />
-              </label>
+              {!template.fileUrl ? (
+                <label className="resumeUploadControl">
+                  <Upload size={16} /> Upload PDF/DOC/DOCX
+                  <input
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    disabled={busy}
+                    type="file"
+                    onChange={(event) => uploadResume(index, event.target.files?.[0] || null)}
+                  />
+                </label>
+              ) : null}
             </div>
           ))}
         </div>
@@ -372,13 +405,9 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
           <button className="button secondary" onClick={() => saveProfile(false)} type="button">
             <Save size={16} /> Save draft
           </button>
-          <form action="/api/profile/confirm" method="post">
-            <input name="profile" type="hidden" value={JSON.stringify(profile)} />
-            <button className="button primary" type="submit">
-              <BadgeCheck size={16} /> Confirm profile
-            </button>
-          </form>
-          {message ? <span className="formMessage">{message}</span> : null}
+          <button className="button primary" disabled={busy} onClick={() => saveProfile(true)} type="button">
+            <BadgeCheck size={16} /> Confirm profile
+          </button>
         </div>
       </div>
 
@@ -393,10 +422,18 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
         <h3>{profile.candidateName}</h3>
         <div className="messageBox">{preview}</div>
         <div className="agentChatBox">
-          <strong>Ask the profile agent</strong>
+          <strong>Profile agent chat</strong>
+          <div className="miniChatTranscript">
+            {profileChat.map((item, index) => (
+              <div className={`miniChatBubble ${item.role}`} key={`${item.role}-${index}`}>
+                <span>{item.role === "assistant" ? "Profile agent" : "You"}</span>
+                <p>{item.text}</p>
+              </div>
+            ))}
+          </div>
           <textarea
             rows={4}
-            placeholder="Example: make this stronger for Singapore KYC roles, but soften the sponsorship wording."
+            placeholder="Example: make this warmer for a risk manager role, but keep work authorization clear."
             value={agentInstruction}
             onChange={(event) => setAgentInstruction(event.target.value)}
           />
@@ -406,7 +443,7 @@ export function ProfileWorkbench({ initialProfile }: { initialProfile: CareerPro
             onClick={runAgentEdit}
             type="button"
           >
-            <Send size={16} /> Apply agent edit
+            <Send size={16} /> Send to profile agent
           </button>
         </div>
         {profile.agentNotes?.length ? (

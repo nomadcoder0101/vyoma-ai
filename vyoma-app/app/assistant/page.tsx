@@ -3,15 +3,14 @@ import { loadProfileAsync } from "../../lib/profile";
 import { Feature, Footer, SectionTitle, Topbar } from "../components";
 import { AssistantChat } from "./assistant-chat";
 
-const starterPrompts = [
-  "What should I do today?",
-  "How should we handle Employment Pass sponsorship?",
-  "Make the strategy stronger for Singapore KYC roles.",
-  "Which resume version should we use for transaction monitoring?",
-];
-
 export default async function AssistantPage() {
   const profile = await loadProfileAsync();
+  const starterPrompts = [
+    "What is the gentlest useful next step today?",
+    `Which saved lead best matches ${profile.candidateName}'s profile?`,
+    "Help me write a short follow-up without sounding desperate.",
+    "Which resume version should I use for the next opportunity?",
+  ];
 
   return (
     <div className="shell">
@@ -20,7 +19,7 @@ export default async function AssistantPage() {
         <section className="section">
           <SectionTitle
             title="AI Career Assistant"
-            text={`Profile-aware chat for ${profile.candidateName}'s AML/KYC and Financial Crime Compliance search.`}
+            text={`A calm, profile-aware chat for ${profile.candidateName}. Ask for one decision, one message, or one next step at a time.`}
           />
         </section>
 

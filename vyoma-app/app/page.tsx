@@ -12,7 +12,6 @@ import {
   Target,
   UserRoundCheck,
 } from "lucide-react";
-import { AuthControls } from "./auth-controls";
 import { Feature, Footer, Topbar } from "./components";
 
 const journey = [
@@ -34,43 +33,13 @@ const journey = [
   },
 ];
 
-const appAreas = [
-  {
-    href: "/onboarding",
-    icon: <UserRoundCheck size={20} />,
-    title: "Profile",
-    text: "Your story, target roles, locations, resume versions, constraints, and preferences.",
-  },
-  {
-    href: "/daily-plan",
-    icon: <CalendarCheck2 size={20} />,
-    title: "Daily Plan",
-    text: "A short list of today's actions so the search feels manageable.",
-  },
-  {
-    href: "/leads",
-    icon: <Target size={20} />,
-    title: "Leads",
-    text: "Capture job links, recruiters, companies, referrals, or ideas before deciding what to do.",
-  },
-  {
-    href: "/tracker",
-    icon: <ListChecks size={20} />,
-    title: "Tracker",
-    text: "Applications, follow-ups, outcomes, and status changes in one place.",
-  },
-  {
-    href: "/resume",
-    icon: <FileText size={20} />,
-    title: "Resume Studio",
-    text: "Pick the strongest resume version and positioning for each opportunity.",
-  },
-  {
-    href: "/assistant",
-    icon: <BrainCircuit size={20} />,
-    title: "Assistant",
-    text: "Ask for next steps, role fit, outreach drafts, and profile-aware guidance.",
-  },
+const flowSteps = [
+  { icon: <UserRoundCheck size={18} />, title: "Profile", text: "Tell the app who you are and what kind of work fits." },
+  { icon: <CalendarCheck2 size={18} />, title: "Plan", text: "Start each day with a short, realistic list." },
+  { icon: <Target size={18} />, title: "Leads", text: "Put jobs and recruiters into one review queue." },
+  { icon: <FileText size={18} />, title: "Resume", text: "Choose the right version before applying." },
+  { icon: <ListChecks size={18} />, title: "Tracker", text: "Follow up without losing context." },
+  { icon: <BrainCircuit size={18} />, title: "Assistant", text: "Ask for wording, next steps, and calmer decisions." },
 ];
 
 export default function Home() {
@@ -89,9 +58,8 @@ export default function Home() {
               resumes, follow-ups, and AI guidance.
             </p>
             <div className="heroActions">
-              <AuthControls variant="hero" />
               <Link className="button secondary" href="#how-it-works">
-                See the flow
+                See how it works <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -128,22 +96,23 @@ export default function Home() {
 
         <section className="main landingMain">
           <div className="sectionTitle">
-            <h2>Everything has a clear place</h2>
+            <h2>Everything follows one gentle flow</h2>
             <p>
-              The app is designed around the real rhythm of a job search:
-              prepare, search, evaluate, apply, follow up, and learn.
+              No maze of modules. The workspace moves from profile to plan to
+              action, then remembers what happened.
             </p>
           </div>
-          <div className="appAreaGrid">
-            {appAreas.map((area) => (
-              <Link className="appArea" href={area.href} key={area.href}>
-                <span className="cardIcon">{area.icon}</span>
+          <div className="landingFlowMap">
+            {flowSteps.map((step, index) => (
+              <article className="landingFlowStep" key={step.title}>
+                <span className="flowStepNumber">{index + 1}</span>
+                <span className="cardIcon">{step.icon}</span>
                 <div>
-                  <h3>{area.title}</h3>
-                  <p>{area.text}</p>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
                 </div>
-                <ArrowRight size={18} />
-              </Link>
+                {index < flowSteps.length - 1 ? <ArrowRight className="flowStepArrow" size={18} /> : null}
+              </article>
             ))}
           </div>
         </section>

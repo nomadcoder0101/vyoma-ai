@@ -9,7 +9,7 @@ export function AssistantChat({ starterPrompts }: { starterPrompts: string[] }) 
     {
       role: "assistant",
       content:
-        "I am ready. Ask me for today's job-search plan, sponsorship wording, Singapore positioning, resume selection, or outreach strategy.",
+        "I am here with you. We can keep this simple: one next step, one message, or one decision at a time.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -24,7 +24,7 @@ export function AssistantChat({ starterPrompts }: { starterPrompts: string[] }) 
       if (!response.ok) return;
       const body = (await response.json()) as { memory: AssistantMemory };
       if (!mounted) return;
-      setMessages(body.memory.messages);
+      if (body.memory.messages.length) setMessages(body.memory.messages);
       setMemoryCount(body.memory.learnings.length);
     }
     loadMemory();

@@ -12,22 +12,41 @@ export async function GET(request: Request) {
   const profile = await loadProfileAsync();
   const resume = profile.resumeTemplates[index];
 
-  if (!resume?.fileUrl) {
+  if (!resume?.fileUrl && !resume?.fullText) {
     return NextResponse.json({ error: "No attached resume file was found." }, { status: 404 });
   }
 
-  const upstream = await fetch(resume.fileUrl);
-  if (!upstream.ok || !upstream.body) {
-    return NextResponse.json({ error: "Could not download the attached resume." }, { status: 502 });
+  if (resume.fileUrl) {
+    const upstream = await fetch(resume.fileUrl);
+    if (upstream.ok && upstream.body) {
+      const fileName = sanitizeDownloadName(resume.fileName || resume.name || `resume-${index + 1}`);
+      const contentType = resume.contentType || upstream.headers.get("content-type") || "application/octet-stream";
+
+      return new NextResponse(upstream.body, {
+        headers: {
+          "Content-Disposition": `attachment; filename="${fileName}"`,
+          "Content-Type": contentType,
+        },
+      });
+    }
   }
 
-  const fileName = sanitizeDownloadName(resume.fileName || resume.name || `resume-${index + 1}`);
-  const contentType = resume.contentType || upstream.headers.get("content-type") || "application/octet-stream";
+  const fileName = sanitizeDownloadName(`${resume.name || `resume-${index + 1}`}.txt`);
+  const body = [
+    resume.name,
+    resume.focus,
+    "",
+    resume.userComment ? `Comment: ${resume.userComment}` : "",
+    "",
+    resume.fullText || "No extracted resume text is available.",
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
 
-  return new NextResponse(upstream.body, {
+  return new NextResponse(body, {
     headers: {
       "Content-Disposition": `attachment; filename="${fileName}"`,
-      "Content-Type": contentType,
+      "Content-Type": "text/plain; charset=utf-8",
     },
   });
 }

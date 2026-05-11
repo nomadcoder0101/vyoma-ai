@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { navItems } from "../lib/content";
 import { AuthControls } from "./auth-controls";
+import { FlowNav } from "./flow-nav";
 
 export function Topbar() {
   return (
@@ -12,14 +12,10 @@ export function Topbar() {
           <span>Job search workspace</span>
         </span>
       </Link>
-      <nav className="nav" aria-label="Main navigation">
-        {navItems.map((item) => (
-          <Link href={item.href} key={item.href}>
-            {item.label}
-          </Link>
-        ))}
+      <div className="nav" aria-label="Main navigation">
+        <FlowNav />
         <AuthControls />
-      </nav>
+      </div>
     </header>
   );
 }
